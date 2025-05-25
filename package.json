@@ -1,0 +1,28 @@
+{
+  "name": "Group Project",
+  "version": "1.0.0",
+  "description": "Weight and Balance Website",
+  "main": "BACKEND/index.js",
+  "type": "module",
+"scripts": {
+  "dev": "set NODE_ENV=development&& nodemon BACKEND/index.js",
+  "start": "set NODE_ENV=production&& node BACKEND/index.js",
+  "build": "npm install && npm install --prefix FRONTEND && npm run build --prefix FRONTEND"
+},
+  "keywords": [],
+  "author": "Your Name or Team",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mailtrap": "^3.4.0",
+    "mongoose": "^8.5.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
