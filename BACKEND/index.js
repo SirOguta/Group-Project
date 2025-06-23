@@ -32,14 +32,18 @@ app.post("/api/generate-pdf", async (req, res) => {
       throw new Error("Missing required fields");
     }
 
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null
+    });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const buffer = await page.pdf({ format: 'A4', printBackground: true });
     await browser.close();
 
-    // Save for debug
-    await writeFile("test_nodemailer.pdf", buffer);
+    // Save for debug (optional, comment out if it fails on Render)
+    // await writeFile("test_nodemailer.pdf", buffer);
 
     // Configure Nodemailer transport
     const transporter = nodemailer.createTransport({
@@ -69,7 +73,7 @@ app.post("/api/generate-pdf", async (req, res) => {
     res.json({ success: true, message: "PDF emailed successfully via Nodemailer" });
 
   } catch (error) {
-    console.error("Nodemailer Error:", error);
+    console.error("PDF Generation Error:", error);
     res.status(500).json({ success: false, message: "Email failed", error: error.message });
   }
 });
