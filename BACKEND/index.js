@@ -4,7 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
 import puppeteer from "puppeteer";
-import { writeFile, readdir } from "fs/promises";
+import {  readdir } from "fs/promises";
 import nodemailer from "nodemailer";
 
 import { connectDB } from "./DATABASE/connectDB.js";
@@ -43,9 +43,10 @@ app.post("/api/generate-pdf", async (req, res) => {
     // Launch Puppeteer
     const browser = await puppeteer.launch({
       headless: "new",
+      executablePath: puppeteer.executablePath(), // This solves the Render Chrome path issue
       args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-      // Let Puppeteer find Chrome automatically
     });
+
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
     const buffer = await page.pdf({ format: "A4", printBackground: true });
