@@ -1,86 +1,74 @@
+import { transporter } from "./email.config.js";
 import {
-	PASSWORD_RESET_REQUEST_TEMPLATE,
-	PASSWORD_RESET_SUCCESS_TEMPLATE,
-	VERIFICATION_EMAIL_TEMPLATE,
+  PASSWORD_RESET_REQUEST_TEMPLATE,
+  PASSWORD_RESET_SUCCESS_TEMPLATE,
+  VERIFICATION_EMAIL_TEMPLATE,
 } from "./emailTemplates.js";
-import { mailtrapClient, sender } from "./mailtrap.config.js";
 
+// Send verification email
 export const sendVerificationEmail = async (email, verificationToken) => {
-	const recipient = [{ email }];
+  try {
+    await transporter.sendMail({
+      from: `"Your App Name" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Verify Your Email",
+      html: VERIFICATION_EMAIL_TEMPLATE.replace("{verificationCode}", verificationToken),
+    });
 
-	try {
-		const response = await mailtrapClient.send({
-			from: sender,
-			to: recipient,
-			subject: "Verify your email",
-			html: VERIFICATION_EMAIL_TEMPLATE.replace("{verificationCode}", verificationToken),
-			category: "Email Verification",
-		});
-
-		console.log("Email sent successfully", response);
-	} catch (error) {
-		console.error(`Error sending verification`, error);
-
-		throw new Error(`Error sending verification email: ${error}`);
-	}
+    console.log("Verification email sent successfully");
+  } catch (error) {
+    console.error("Full error:", error); 
+    throw new Error("Could not send verification email");
+  }
 };
 
+// Send welcome email
 export const sendWelcomeEmail = async (email, name) => {
-	const recipient = [{ email }];
+  try {
+    await transporter.sendMail({
+      from: `"Your App Name" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Welcome to Auth Company",
+      html: `<p>Hi ${name}, welcome to Auth Company!</p>`,
+    });
 
-	try {
-		const response = await mailtrapClient.send({
-			from: sender,
-			to: recipient,
-			template_uuid: "f94e7d85-30fa-4323-b8bf-231180eba5be",
-			template_variables: {
-				company_info_name: "Auth Company",
-				name: name,
-			},
-		});
-
-		console.log("Welcome email sent successfully", response);
-	} catch (error) {
-		console.error(`Error sending welcome email`, error);
-
-		throw new Error(`Error sending welcome email: ${error}`);
-	}
+    console.log("Welcome email sent successfully");
+  } catch (error) {
+    console.error("Error sending welcome email:", error.message);
+    throw new Error("Could not send welcome email");
+  }
 };
 
+// Send password reset request email
 export const sendPasswordResetEmail = async (email, resetURL) => {
-	const recipient = [{ email }];
+  try {
+    await transporter.sendMail({
+      from: `"Your App Name" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Reset Your Password",
+      html: PASSWORD_RESET_REQUEST_TEMPLATE.replace("{resetURL}", resetURL),
+    });
 
-	try {
-		const response = await mailtrapClient.send({
-			from: sender,
-			to: recipient,
-			subject: "Reset your password",
-			html: PASSWORD_RESET_REQUEST_TEMPLATE.replace("{resetURL}", resetURL),
-			category: "Password Reset",
-		});
-	} catch (error) {
-		console.error(`Error sending password reset email`, error);
-
-		throw new Error(`Error sending password reset email: ${error}`);
-	}
+    console.log("Password reset request email sent successfully");
+  } catch (error) {
+    console.error("Error sending password reset email:", error.message);
+    throw new Error("Could not send password reset email");
+  }
 };
 
+// Send password reset success email
 export const sendResetSuccessEmail = async (email) => {
-	const recipient = [{ email }];
+  try {
+    await transporter.sendMail({
+      from: `"Your App Name" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Password Reset Successful",
+      html: PASSWORD_RESET_SUCCESS_TEMPLATE,
+    });
 
-	try {
-		const response = await mailtrapClient.send({
-			from: sender,
-			to: recipient,
-			subject: "Password Reset Successful",
-			html: PASSWORD_RESET_SUCCESS_TEMPLATE,
-			category: "Password Reset",
-		});
-
-		console.log("Password reset email sent successfully", response);
-	} catch (error) {
-		console.error(`Error sending password reset success email`, error);
-
-		throw new Error(`Error sending password reset success email: ${error}`);
-	}
+    console.log("Password reset success email sent successfully");
+  } catch (error) {
+    console.error("Error sending password reset success email:", error.message);
+    throw new Error("Could not send password reset success email");
+  }
 };
