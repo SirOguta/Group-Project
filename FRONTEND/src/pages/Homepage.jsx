@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import axios from 'axios';
 import {
   ComposedChart,
@@ -605,31 +605,78 @@ const fuelItems = [
   "Alternate",
   "10% of D&A",
   "Reserve",
-  "Endurance",
   "Extra",
 ];
 
-const MinimumLegalFuel = ({ unitLabel }) => {
+const MinimumLegalFuel = ({ unitLabel, aircraftType }) => {
   const [fuelData, setFuelData] = useState(
     fuelItems.map((label) => ({
       label,
       hr: 0,
       min: label === "Reserve" ? 45 : 0,
-      usg: 0,
+      usg: label === "Reserve" ? (
+        aircraftType === 'C-172' ? (45 / 60 * (53 / 4.5)).toFixed(2) : 
+        (45 / 60 * (23 / 4)).toFixed(2)
+      ) : 0,
     }))
   );
 
+  useEffect(() => {
+    console.log('MinimumLegalFuel aircraftType updated:', aircraftType); // Debug log
+    setFuelData(
+      fuelItems.map((label) => {
+        const existing = fuelData.find(item => item.label === label) || {};
+        const hr = label === "Reserve" ? 0 : (existing.hr || 0);
+        const min = label === "Reserve" ? 45 : (existing.min || 0);
+        const isC172 = aircraftType === 'C-172';
+        const usg = label === "Reserve" ? (
+          isC172 ? (45 / 60 * (53 / 4.5)).toFixed(2) : (45 / 60 * (23 / 4)).toFixed(2)
+        ) : calculateFuelUsage(hr, min, isC172);
+        return { label, hr, min, usg };
+      })
+    );
+  }, [aircraftType]);
+
+  const calculateFuelUsage = (hours, minutes, isC172) => {
+    const totalHours = (parseFloat(hours) || 0) + (parseFloat(minutes) || 0) / 60;
+    if (isC172) {
+      // C-172: 4.5 hours = 53 gallons
+      const gallonsPerHour = 53 / 4.5; // ~11.7778 gallons/hour
+      return (totalHours * gallonsPerHour).toFixed(2);
+    } else {
+      // C-150: 4.5 hours = 23 gallons
+      const gallonsPerHour = 23 / 4; // 5.111
+      return (totalHours * gallonsPerHour).toFixed(2);
+    }
+  };
+
   const handleChange = (index, field, value) => {
-    const updated = [...fuelData];
-    updated[index][field] = Number(value);
-    setFuelData(updated);
+    if (value === '' || (/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0)) {
+      const updated = [...fuelData];
+      updated[index][field] = value === '' ? 0 : Number(value);
+
+      // Recalculate usg for time-based categories
+      if (['Destination', 'Alternate', 'Reserve', 'Extra'].includes(updated[index].label)) {
+        updated[index].usg = calculateFuelUsage(updated[index].hr, updated[index].min, aircraftType === 'C-172');
+      }
+
+      // Update 10% of D&A
+      const daIndex = fuelItems.indexOf('10% of D&A');
+      if (daIndex !== -1) {
+        const destinationUsage = parseFloat(updated.find(item => item.label === 'Destination')?.usg || 0);
+        const alternateUsage = parseFloat(updated.find(item => item.label === 'Alternate')?.usg || 0);
+        updated[daIndex].usg = ((destinationUsage + alternateUsage) * 0.1).toFixed(2);
+      }
+
+      setFuelData(updated);
+    }
   };
 
   const total = fuelData.reduce(
     (acc, curr) => {
-      acc.hr += curr.hr;
-      acc.min += curr.min;
-      acc.usg += curr.usg;
+      acc.hr += parseFloat(curr.hr) || 0;
+      acc.min += parseFloat(curr.min) || 0;
+      acc.usg += parseFloat(curr.usg) || 0;
       return acc;
     },
     { hr: 0, min: 0, usg: 0 }
@@ -639,57 +686,64 @@ const MinimumLegalFuel = ({ unitLabel }) => {
   const normalizedMin = total.min % 60;
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 p-4 bg-white rounded-xl shadow">
-      <h2 className="text-2xl font-bold text-center mb-6">Minimum Legal Fuel</h2>
-      <table className="w-full table-auto border border-gray-300">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2 border">Category</th>
-            <th className="p-2 border">Hr</th>
-            <th className="p-2 border">Min</th>
-            <th className="p-2 border">{`Weight (${unitLabel})`}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {fuelData.map((item, index) => (
-            <tr key={item.label}>
-              <td className="border p-2">{item.label}</td>
-              <td className="border p-2">
-                <input
-                  type="number"
-                  value={item.hr}
-                  disabled={item.label === "Reserve"}
-                  onChange={(e) => handleChange(index, "hr", e.target.value)}
-                  className="w-full border rounded px-1"
-                />
-              </td>
-              <td className="border p-2">
-                <input
-                  type="number"
-                  value={item.min}
-                  disabled={item.label === "Reserve"}
-                  onChange={(e) => handleChange(index, "min", e.target.value)}
-                  className="w-full border rounded px-1"
-                />
-              </td>
-              <td className="border p-2">
-                <input
-                  type="number"
-                  value={item.usg}
-                  onChange={(e) => handleChange(index, "usg", e.target.value)}
-                  className="w-full border rounded px-1"
-                />
-              </td>
+    <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-lg">
+      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Minimum Legal Fuel</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full table-auto border border-gray-200 rounded-lg">
+          <thead className="bg-indigo-100 text-indigo-700">
+            <tr>
+              <th className="p-3 border-b text-left font-semibold">Category</th>
+              <th className="p-3 border-b text-left font-semibold">Hours</th>
+              <th className="p-3 border-b text-left font-semibold">Minutes</th>
+              <th className="p-3 border-b text-left font-semibold">Fuel Usage (Gallons)</th>
             </tr>
-          ))}
-          <tr className="bg-gray-200 font-semibold">
-            <td className="border p-2">Total Endurance</td>
-            <td className="border p-2">{normalizedHr}</td>
-            <td className="border p-2">{normalizedMin}</td>
-            <td className="border p-2">{total.usg.toFixed(2)}</td>
-          </tr>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {fuelData.map((item, index) => (
+              <tr key={item.label} className="hover:bg-gray-50">
+                <td className="border-b p-3 text-gray-700">{item.label}</td>
+                <td className="border-b p-3">
+                  <input
+                    type="number"
+                    value={item.hr}
+                    disabled={item.label === "Reserve"}
+                    onChange={(e) => handleChange(index, "hr", e.target.value)}
+                    className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-200"
+                    placeholder="0"
+                  />
+                </td>
+                <td className="border-b p-3">
+                  <input
+                    type="number"
+                    value={item.min}
+                    disabled={item.label === "Reserve"}
+                    onChange={(e) => handleChange(index, "min", e.target.value)}
+                    className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-200"
+                    placeholder="0"
+                  />
+                </td>
+                <td className="border-b p-3">
+                  <input
+                    type="number"
+                    value={item.usg}
+                    disabled={['Destination', 'Alternate', '10% of D&A', 'Reserve', 'Extra'].includes(item.label)}
+                    onChange={(e) => handleChange(index, "usg", e.target.value)}
+                    className="w-full border border-gray-300 rounded px-2 py-1 bg-gray-100 cursor-not-allowed disabled:bg-gray-100"
+                    placeholder="0"
+                    readOnly={['Destination', 'Alternate', '10% of D&A', 'Reserve', 'Extra'].includes(item.label)}
+                  />
+                </td>
+              </tr>
+            ))}
+            <tr className="bg-indigo-50 font-semibold text-gray-800">
+              <td className="border-b p-3">Total Endurance</td>
+              <td className="border-b p-3">{normalizedHr}</td>
+              <td className="border-b p-3">{normalizedMin}</td>
+              <td className="border-b p-3">{total.usg.toFixed(2)} Gallons</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
@@ -978,7 +1032,6 @@ const Homepage = () => {
               <nav className="flex space-x-6">
                 <div className="space-x-6">
                   <a href="#" className="text-gray-900 font-medium hover:text-blue-600">Home</a>
-                  <a href="#" className="text-gray-600 hover:text-blue-600">History</a>
                   <button onClick={handleLogout} className="text-gray-600 hover:text-blue-600">Logout</button>
                 </div>
               </nav>
@@ -1072,8 +1125,11 @@ const Homepage = () => {
                 </div>
               )}
               {activeTab === 'Fuel' && (
-                <MinimumLegalFuel unitLabel={aircraftConfigs[activeAircraftTab].unitLabels.weight} />
-              )}
+               <MinimumLegalFuel 
+                    unitLabel={aircraftConfigs[activeAircraftTab].unitLabels.weight} 
+                   aircraftType={activeAircraftTab} 
+                  />
+                )}
             </div>
           </div>
         </main>
