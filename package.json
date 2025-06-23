@@ -7,8 +7,7 @@
   "scripts": {
   "dev": "set NODE_ENV=development&& nodemon BACKEND/index.js",
   "start": "set NODE_ENV=production&& node BACKEND/index.js",
-  "build": "npm install && npm install --prefix FRONTEND && npm run build --prefix FRONTEND",
-  "postinstall": "node node_modules/puppeteer/install.js"
+  "build": "npm install && npm install --prefix FRONTEND && npm run build --prefix FRONTEND"
   },
 
   "keywords": [],
