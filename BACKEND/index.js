@@ -4,9 +4,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
 import puppeteer from "puppeteer";
-import { writeFile } from 'fs/promises'; 
+import { writeFile, readdir } from "fs/promises";
 import nodemailer from "nodemailer";
-
 
 import { connectDB } from "./DATABASE/connectDB.js";
 import authRoutes from "./routes/auth.route.js";
@@ -19,12 +18,10 @@ const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use("/api/auth", authRoutes);
-app.use('/api/weightbalance', weightBalanceRoutes);
-
-import { readdir } from 'fs/promises';
+app.use("/api/weightbalance", weightBalanceRoutes);
 
 app.post("/api/generate-pdf", async (req, res) => {
   const { html, email, aircraftType, date } = req.body;
@@ -34,32 +31,34 @@ app.post("/api/generate-pdf", async (req, res) => {
       throw new Error("Missing required fields");
     }
 
-    // Debug cache directory
-    console.log('Puppeteer Cache Dir:', process.env.PUPPETEER_CACHE_DIR);
+    // Debug Puppeteer configuration
+    console.log("Puppeteer Cache Dir:", process.env.PUPPETEER_CACHE_DIR || "Not set");
     try {
-      const cacheDir = await readdir('/opt/render/.cache/puppeteer/chrome', { withFileTypes: true });
-      console.log('Cache contents:', cacheDir.map(dirent => dirent.name));
+      const cacheDir = await readdir("/opt/render/.cache/puppeteer/chrome", { withFileTypes: true });
+      console.log("Cache contents:", cacheDir.map(dirent => dirent.name));
     } catch (err) {
-      console.error('Error reading cache dir:', err);
+      console.error("Error reading cache dir:", err.message);
     }
 
+    // Launch Puppeteer
     const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      // Let Puppeteer find Chrome automatically
     });
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    const buffer = await page.pdf({ format: 'A4', printBackground: true });
+    await page.setContent(html, { waitUntil: "networkidle0" });
+    const buffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
 
-    // Save for debug (optional, comment out if it fails)
+    // Save PDF for debug (optional, commented out to avoid permission issues)
     // await writeFile("test_nodemailer.pdf", buffer);
 
     // Configure Nodemailer transport
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: true,
+      port: parseInt(process.env.SMTP_PORT, 10),
+      secure: process.env.SMTP_PORT === "465", // Secure true for port 465, false for 587
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -74,32 +73,34 @@ app.post("/api/generate-pdf", async (req, res) => {
       text: `Attached is your Weight and Balance Sheet for ${aircraftType} generated on ${date}.`,
       attachments: [
         {
-          filename: `weight_balance_${aircraftType}_${date.replace(/[\/:]/g, '-')}.pdf`,
+          filename: `weight_balance_${aircraftType}_${date.replace(/[\/:]/g, "-")}.pdf`,
           content: buffer,
+          contentType: "application/pdf",
         },
       ],
     });
 
     res.json({ success: true, message: "PDF emailed successfully via Nodemailer" });
-
   } catch (error) {
-    console.error("PDF Generation Error:", error);
+    console.error("PDF Generation Error:", error.message, error.stack);
     res.status(500).json({ success: false, message: "Email failed", error: error.message });
   }
 });
 
 if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "/FRONTEND/dist")));
-    app.get("*", (req, res) => {
-        res.sendFile(path.resolve(__dirname, "FRONTEND", "dist", "index.html"));
-    });
+  app.use(express.static(path.join(__dirname, "/FRONTEND/dist")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "FRONTEND", "dist", "index.html"));
+  });
 }
 
-connectDB().then(() => {
+connectDB()
+  .then(() => {
     app.listen(PORT, () => {
-        console.log("Server is running on port:", PORT);
+      console.log("Server is running on port:", PORT);
     });
-}).catch(err => {
-    console.error("Failed to connect to DB", err);
+  })
+  .catch((err) => {
+    console.error("Failed to connect to DB:", err.message);
     process.exit(1);
-});
+  });
