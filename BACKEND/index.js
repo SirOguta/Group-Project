@@ -32,17 +32,18 @@ app.post("/api/generate-pdf", async (req, res) => {
       throw new Error("Missing required fields");
     }
 
+    console.log('Puppeteer Cache Dir:', process.env.PUPPETEER_CACHE_DIR); // Debug cache path
     const browser = await puppeteer.launch({
       headless: 'new',
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/opt/render/.cache/puppeteer/chrome/linux-137.0.7151.119/chrome-linux64/chrome'
     });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const buffer = await page.pdf({ format: 'A4', printBackground: true });
     await browser.close();
 
-    // Save for debug (optional, comment out if it fails on Render)
+    // Save for debug (optional, comment out if it fails)
     // await writeFile("test_nodemailer.pdf", buffer);
 
     // Configure Nodemailer transport
@@ -77,6 +78,7 @@ app.post("/api/generate-pdf", async (req, res) => {
     res.status(500).json({ success: false, message: "Email failed", error: error.message });
   }
 });
+
 
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "/FRONTEND/dist")));
