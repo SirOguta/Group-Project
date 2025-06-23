@@ -24,6 +24,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use('/api/weightbalance', weightBalanceRoutes);
 
+import { readdir } from 'fs/promises';
+
 app.post("/api/generate-pdf", async (req, res) => {
   const { html, email, aircraftType, date } = req.body;
 
@@ -32,11 +34,18 @@ app.post("/api/generate-pdf", async (req, res) => {
       throw new Error("Missing required fields");
     }
 
-    console.log('Puppeteer Cache Dir:', process.env.PUPPETEER_CACHE_DIR); // Debug cache path
+    // Debug cache directory
+    console.log('Puppeteer Cache Dir:', process.env.PUPPETEER_CACHE_DIR);
+    try {
+      const cacheDir = await readdir('/opt/render/.cache/puppeteer/chrome', { withFileTypes: true });
+      console.log('Cache contents:', cacheDir.map(dirent => dirent.name));
+    } catch (err) {
+      console.error('Error reading cache dir:', err);
+    }
+
     const browser = await puppeteer.launch({
       headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/opt/render/.cache/puppeteer/chrome/linux-137.0.7151.119/chrome-linux64/chrome'
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
@@ -78,7 +87,6 @@ app.post("/api/generate-pdf", async (req, res) => {
     res.status(500).json({ success: false, message: "Email failed", error: error.message });
   }
 });
-
 
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "/FRONTEND/dist")));

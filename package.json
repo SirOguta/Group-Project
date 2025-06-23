@@ -4,11 +4,12 @@
   "description": "Weight and Balance Website",
   "main": "BACKEND/index.js",
   "type": "module",
+ 
   "scripts": {
   "dev": "set NODE_ENV=development&& nodemon BACKEND/index.js",
   "start": "set NODE_ENV=production&& node BACKEND/index.js",
-  "build": "npm install && npx puppeteer browsers install chrome && npm install --prefix FRONTEND && npm run build --prefix FRONTEND"
-},
+  "build": "npm install && npx puppeteer browsers install chrome@126.0.6478.126 && npm install --prefix FRONTEND && npm run build --prefix FRONTEND"
+ },
  
   "keywords": [],
   "author": "Your Name or Team",
