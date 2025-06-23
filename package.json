@@ -5,11 +5,10 @@
   "main": "BACKEND/index.js",
   "type": "module",
   "scripts": {
-  "dev": "set NODE_ENV=development&& nodemon BACKEND/index.js",
-  "start": "set NODE_ENV=production&& node BACKEND/index.js",
-  "build": "npm install && npm install --prefix FRONTEND && npm run build --prefix FRONTEND"
+    "dev": "set NODE_ENV=development&& nodemon BACKEND/index.js",
+    "start": "set NODE_ENV=production&& node BACKEND/index.js",
+    "build": "npm install && npm install --prefix FRONTEND && npm run build --prefix FRONTEND"
   },
-
   "keywords": [],
   "author": "Your Name or Team",
   "license": "ISC",
