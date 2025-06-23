@@ -5,10 +5,12 @@
   "main": "BACKEND/index.js",
   "type": "module",
   "scripts": {
-    "dev": "set NODE_ENV=development&& nodemon BACKEND/index.js",
-    "start": "set NODE_ENV=production&& node BACKEND/index.js",
-    "build": "npm install && npx puppeteer browsers install chrome@126.0.6478.126 && ls -la /opt/render/.cache/puppeteer/chrome && npm install --prefix FRONTEND && npm run build --prefix FRONTEND"
+  "dev": "set NODE_ENV=development&& nodemon BACKEND/index.js",
+  "start": "set NODE_ENV=production&& node BACKEND/index.js",
+  "build": "npm install && npm install --prefix FRONTEND && npm run build --prefix FRONTEND",
+  "postinstall": "node node_modules/puppeteer/install.js"
   },
+
   "keywords": [],
   "author": "Your Name or Team",
   "license": "ISC",
