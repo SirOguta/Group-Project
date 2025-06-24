@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   ComposedChart,
@@ -13,7 +13,6 @@ import {
   Label,
   Legend,
   Customized,
-  Text
 } from 'recharts';
 
 const isPositiveNumber = (val) => /^\d*\.?\d*$/.test(String(val).trim());
@@ -79,7 +78,6 @@ const WeightBalanceTable = ({
     const startWeight = aircraftType === 'C-172' ? 1500 : minWeight;
 
     if (aircraftType === 'C-172') {
-      // Normal Category Envelope
       points.push({ weight: 1500, moment: (1500 * 35) / scaleFactor });
       points.push({ weight: 1950, moment: (1950 * 35) / scaleFactor });
       points.push({ weight: 2300, moment: (2300 * 38.5) / scaleFactor });
@@ -88,7 +86,6 @@ const WeightBalanceTable = ({
       points.push({ weight: 1500, moment: (1500 * 47.3) / scaleFactor });
       points.push({ weight: 1500, moment: (1500 * 35) / scaleFactor });
 
-      // Utility Category Envelope
       points.push({ weight: 1500, moment: (1500 * 35.0) / scaleFactor });
       points.push({ weight: 1950, moment: (1950 * 35.0) / scaleFactor });
       points.push({ weight: 2000, moment: (2000 * 35.5) / scaleFactor });
@@ -110,15 +107,14 @@ const WeightBalanceTable = ({
   };
 
   const envelopePoints = generateEnvelopePoints();
-  const normalEnvelopePoints = envelopePoints.slice(0, 7); // Normal Category
-  const utilityEnvelopePoints = envelopePoints.slice(7, 14); // Utility Category
+  const normalEnvelopePoints = envelopePoints.slice(0, 7);
+  const utilityEnvelopePoints = envelopePoints.slice(7, 14);
 
-  // Define anchor points for labels
   const getAnchorPoints = () => {
     if (aircraftType !== 'C-172') return { normal: null, utility: null };
     return {
-      normal: { weight: 2070, moment: 88 }, 
-      utility: { weight: 1900, moment: 72 }, 
+      normal: { weight: 2070, moment: 88 },
+      utility: { weight: 1900, moment: 72 },
     };
   };
 
@@ -140,7 +136,7 @@ const WeightBalanceTable = ({
         />
         <polygon
           points={utilityEnvelopePoints.map((p) => `${xScale(p.moment)},${yScale(p.weight)}`).join(' ')}
-          fill="rgba(255, 165, 0, 0.3)" // Orange for Utility
+          fill="rgba(255, 165, 0, 0.3)"
           stroke="#FFA500"
           strokeWidth={2}
           strokeDasharray="5 5"
@@ -155,9 +151,9 @@ const WeightBalanceTable = ({
     const yScale = yAxisMap[Object.keys(yAxisMap)[0]].scale;
 
     const normalLabelX = xScale(normalAnchor.moment);
-    const normalLabelY = yScale(normalAnchor.weight); // Offset above anchor
+    const normalLabelY = yScale(normalAnchor.weight);
     const utilityLabelX = xScale(utilityAnchor.moment);
-    const utilityLabelY = yScale(utilityAnchor.weight); // Offset above anchor
+    const utilityLabelY = yScale(utilityAnchor.weight);
 
     return (
       <g>
@@ -284,401 +280,428 @@ const WeightBalanceTable = ({
             <tr className="border-b hover:bg-gray-100">
               <td className="px-4 py-3 font-semibold">BAGGAGE AREA 2 (MAX {maxBaggage2} {unitLabels.weight})</td>
               <td><input type="text" name="weight" value={baggage2.weight} onChange={(e) => handleInputChange(e, baggage2, setBaggage2, false, maxBaggage2)} className="border rounded px-2 py-1 w-full" /></td>
-              <td><input type="text" value={baggage2.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-              <td><input type="text" value={baggage2.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-            </tr>
-          )}
-          <tr className="bg-gray-200 font-bold">
-            <td className="px-4 py-3">A.U.W. (MAX {envelopeConfig.maxWeight} {unitLabels.weight})</td>
-            <td><input type="text" value={totalWeight.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-            <td><input type="text" value={`TAKEOFF C.O.G: ${takeoffCOG}`} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed font-semibold" /></td>
-            <td><input type="text" value={totalMoment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+            <td><input type="text" value={baggage2.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+            <td><input type="text" value={baggage2.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
           </tr>
-          <tr className="border-t">
-            <td className="px-4 py-3 font-semibold">EST FUEL BURN OFF {aircraftType === 'C-150' ? 14 : 48} {unitLabels.weight}/HR</td>
-            <td><input type="text" name="weight" value={fuelBurn.weight} onChange={(e) => handleInputChange(e, fuelBurn, setFuelBurn, false, parseFloat(fuel.weight) || maxFuel)} className="border rounded px-2 py-1 w-full" /></td>
-            <td><input type="text" value={fuelBurn.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-            <td><input type="text" value={fuelBurn.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-          </tr>
-          <tr className="bg-gray-200 font-bold">
-            <td className="px-4 py-3">LANDING WEIGHT</td>
-            <td><input type="text" value={landingWeight.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-            <td><input type="text" value={`LANDING C.O.G: ${landingCOG}`} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed font-semibold" /></td>
-            <td><input type="text" value={landingMoment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-          </tr>
-        </tbody>
-      </table>
-      
-      <div className="mt-6 text-center">
-        <button onClick={saveToDatabase} className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
-          Save Sheet
-        </button>
-      </div>
+        )}
+        <tr className="bg-gray-200 font-bold">
+          <td className="px-4 py-3">A.U.W. (MAX {envelopeConfig.maxWeight} {unitLabels.weight})</td>
+          <td><input type="text" value={totalWeight.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+          <td><input type="text" value={`TAKEOFF C.O.G: ${takeoffCOG}`} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed font-semibold" /></td>
+          <td><input type="text" value={totalMoment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+        </tr>
+        <tr className="border-t">
+          <td className="px-4 py-3 font-semibold">EST FUEL BURN OFF {aircraftType === 'C-150' ? 14 : 48} {unitLabels.weight}/HR</td>
+          <td><input type="text" name="weight" value={fuelBurn.weight} onChange={(e) => handleInputChange(e, fuelBurn, setFuelBurn, false, parseFloat(fuel.weight) || maxFuel)} className="border rounded px-2 py-1 w-full" /></td>
+          <td><input type="text" value={fuelBurn.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+          <td><input type="text" value={fuelBurn.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+        </tr>
+        <tr className="bg-gray-200 font-bold">
+          <td className="px-4 py-3">LANDING WEIGHT</td>
+          <td><input type="text" value={landingWeight.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+          <td><input type="text" value={`LANDING C.O.G: ${landingCOG}`} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed font-semibold" /></td>
+          <td><input type="text" value={landingMoment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+        </tr>
+      </tbody>
+    </table>
 
-      <div className="mt-12">
-        <h2 className="text-xl font-semibold mb-4 text-center">C.O.G MOMENT ENVELOPE</h2>
-        <ResponsiveContainer width="95%" height={500} minWidth={800}>
-          <ComposedChart data={envelopePoints} margin={{ top: 20, right: 40, left: 40, bottom: 60 }}>
-            {console.log('Rendering chart with envelopePoints:', envelopePoints, 'aircraftType:', aircraftType)}
-            <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} interval={4} />
-            <CartesianGrid stroke="rgba(0, 0, 0, 0.1)" strokeWidth={0.5} interval={0} vertical={true} horizontal={true} />
-            <XAxis
-              type="number"
-              dataKey="moment"
-              label={{
-                value: `LOADED AIRCRAFT MOMENT (${unitLabels.moment})`,
-                position: 'insideBottom',
-                offset: -10,
-                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
-              }}
-              domain={[envelopeConfig.momentMin, envelopeConfig.momentMax]}
-              ticks={axisConfig.envelope.xTicks}
-              tickFormatter={axisConfig.envelope.xTickFormatter}
-              tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
-              height={50}
-              allowDataOverflow={true}
+    <div className="mt-6 text-center">
+      <button onClick={saveToDatabase} className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+        Save Sheet
+      </button>
+    </div>
+
+    <div className="mt-12">
+      <h2 className="text-xl font-semibold mb-4 text-center">C.O.G MOMENT ENVELOPE</h2>
+      <ResponsiveContainer width="95%" height={500} minWidth={800}>
+        <ComposedChart data={envelopePoints} margin={{ top: 20, right: 40, left: 40, bottom: 60 }}>
+          <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} interval={4} />
+          <CartesianGrid stroke="rgba(0, 0, 0, 0.1)" strokeWidth={0.5} interval={0} vertical={true} horizontal={true} />
+          <XAxis
+            type="number"
+            dataKey="moment"
+            label={{
+              value: `LOADED AIRCRAFT MOMENT (${unitLabels.moment})`,
+              position: 'insideBottom',
+              offset: -10,
+              style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
+            }}
+            domain={[envelopeConfig.momentMin, envelopeConfig.momentMax]}
+            ticks={axisConfig.envelope.xTicks}
+            tickFormatter={axisConfig.envelope.xTickFormatter}
+            tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
+            height={50}
+            allowDataOverflow={true}
+          />
+          <YAxis
+            type="number"
+            dataKey="weight"
+            label={{
+              value: `LOADED AIRCRAFT WEIGHT (${unitLabels.weight})`,
+              angle: -90,
+              position: 'insideLeft',
+              offset: 7,
+              style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
+            }}
+            domain={[envelopeConfig.minWeight, aircraftType === 'C-150' ? 800 : 2400]}
+            ticks={axisConfig.envelope.yTicks}
+            tickFormatter={axisConfig.envelope.yTickFormatter}
+            tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
+            width={100}
+            interval={0}
+            allowDataOverflow={true}
+          />
+          <Tooltip
+            formatter={(value, name) => [value.toFixed(1), name]}
+          />
+          <Legend 
+            verticalAlign="bottom"
+            height={36}
+            wrapperStyle={{ paddingTop: 20 }}
+          />
+          <Customized component={drawEnvelopeArea} />
+          <Customized component={drawLabels} />
+          <Scatter data={[takeoffPoint]} name={`TAKEOFF C.O.G(${takeoffCOG})`} fill={isTakeoffOutOfEnvelope ? 'red' : 'brown'} shape="circle" r={8} />
+          <Scatter data={[landingPoint]} name={`LANDING C.O.G(${landingCOG})`} fill={isLandingOutOfEnvelope ? 'red' : 'green'} shape="square" r={8} />
+          <ReferenceLine
+            x={takeoffPoint.moment}
+            stroke="brown"
+            strokeWidth={1.5}
+            strokeDasharray="5 3"
+          >
+            <Label
+              value={`${takeoffPoint.moment.toFixed(1)}`}
+              position="top"
+              dx={5}
+              fill="brown"
+              style={{ fontSize: '0.8rem', fontWeight: 600 }}
             />
-            <YAxis
-              type="number"
-              dataKey="weight"
-              label={{
-                value: `LOADED AIRCRAFT WEIGHT (${unitLabels.weight})`,
-                angle: -90,
-                position: 'insideLeft',
-                offset: 7,
-                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
-              }}
-              domain={[envelopeConfig.minWeight, envelopeConfig.maxWeight]}
-              ticks={axisConfig.envelope.yTicks}
-              tickFormatter={axisConfig.envelope.yTickFormatter}
-              tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
-              width={100}
-              interval={0}
-              allowDataOverflow={true}
+          </ReferenceLine>
+          <ReferenceLine
+            y={takeoffPoint.weight}
+            stroke="brown"
+            strokeWidth={1.5}
+            strokeDasharray="5 3"
+          >
+            <Label
+              value={`${takeoffPoint.weight.toFixed(0)}`}
+              position="left"
+              fill="brown"
+              style={{ fontSize: '0.8rem', fontWeight: 600 }}
             />
-            <Tooltip
-              formatter={(value, name) => [value.toFixed(1), name]}
+          </ReferenceLine>
+          <ReferenceLine
+            x={landingPoint.moment}
+            stroke="green"
+            strokeWidth={1.5}
+            strokeDasharray="5 3"
+          >
+            <Label
+              value={`${landingPoint.moment.toFixed(1)}`}
+              position="top"
+              dx={-5}
+              fill="green"
+              style={{ fontSize: '0.8rem', fontWeight: 600 }}
             />
-            <Legend 
-              verticalAlign="bottom"
-              height={36}
-              wrapperStyle={{ paddingTop: 20 }}
+          </ReferenceLine>
+          <ReferenceLine
+            y={landingPoint.weight}
+            stroke="green"
+            strokeWidth={1.5}
+            strokeDasharray="5 3"
+          >
+            <Label
+              value={`${landingPoint.weight.toFixed(0)}`}
+              position="left"
+              fill="green"
+              style={{ fontSize: '0.8rem', fontWeight: 600 }}
             />
-            <Customized component={drawEnvelopeArea} />
-            <Customized component={drawLabels} />
-            <Scatter data={[takeoffPoint]} name={`TAKEOFF C.O.G(${takeoffCOG})`} fill={isTakeoffOutOfEnvelope ? 'red' : 'brown'} shape="circle" r={8} />
-            <Scatter data={[landingPoint]} name={`LANDING C.O.G(${landingCOG})`} fill={isLandingOutOfEnvelope ? 'red' : 'green'} shape="square" r={8} />
+          </ReferenceLine>
+          {aircraftType === 'C-172' && (
+            <>
+              <ReferenceLine
+                y={totalWeight}
+                stroke="orange"
+                strokeWidth={1.5}
+                strokeDasharray="5 3"
+              >
+                <Label
+                  value={`A.U.W: ${totalWeight.toFixed(0)}`}
+                  position="left"
+                  fill="orange"
+                  style={{ fontSize: '0.8rem', fontWeight: 600 }}
+                />
+              </ReferenceLine>
+              <ReferenceLine
+                x={totalMoment / 1000}
+                stroke="orange"
+                strokeWidth={1.5}
+                strokeDasharray="5 3"
+              >
+                <Label
+                  value={`Moment/1000: ${(totalMoment / 1000).toFixed(1)}`}
+                  position="top"
+                  fill="orange"
+                  style={{ fontSize: '0.8rem', fontWeight: 600 }}
+                />
+              </ReferenceLine>
+              <ReferenceLine
+                x={envelopeConfig.forwardLimit}
+                stroke="#8884d8"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+              >
+                <Label
+                  value={`Forward Limit: ${envelopeConfig.forwardLimit.toFixed(1)}`}
+                  position="top"
+                  fill="#8884d8"
+                  style={{ fontSize: '0.8rem', fontWeight: 600 }}
+                />
+              </ReferenceLine>
+              <ReferenceLine
+                x={envelopeConfig.aftLimit}
+                stroke="#8884d8"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+              >
+                <Label
+                  value={`Aft Limit: ${envelopeConfig.aftLimit.toFixed(1)}`}
+                  position="top"
+                  fill="#8884d8"
+                  style={{ fontSize: '0.8rem', fontWeight: 600 }}
+                />
+              </ReferenceLine>
+            </>
+          )}
+          {isTakeoffOutOfEnvelope && (
             <ReferenceLine
               x={takeoffPoint.moment}
-              stroke="brown"
-              strokeWidth={1.5}
-              strokeDasharray="5 3"
-            >
-              <Label
-                value={`${takeoffPoint.moment.toFixed(1)}`}
-                position="top"
-                dx={5}
-                fill="brown"
-                style={{ fontSize: '0.8rem', fontWeight: 600 }}
-              />
-            </ReferenceLine>
-            <ReferenceLine
               y={takeoffPoint.weight}
-              stroke="brown"
-              strokeWidth={1.5}
-              strokeDasharray="5 3"
-            >
-              <Label
-                value={`${takeoffPoint.weight.toFixed(0)}`}
-                position="left"
-                fill="brown"
-                style={{ fontSize: '0.8rem', fontWeight: 600 }}
-              />
-            </ReferenceLine>
+              stroke="red"
+              strokeWidth={0}
+              label={{
+                position: 'top',
+                value: '⚠️ Takeoff C.O.G OUT OF LIMIT',
+                fill: 'red',
+                fontSize: 12,
+                fontWeight: 'bold',
+              }}
+            />
+          )}
+          {isLandingOutOfEnvelope && (
             <ReferenceLine
               x={landingPoint.moment}
-              stroke="green"
-              strokeWidth={1.5}
-              strokeDasharray="5 3"
-            >
-              <Label
-                value={`${landingPoint.moment.toFixed(1)}`}
-                position="top"
-                dx={-5}
-                fill="green"
-                style={{ fontSize: '0.8rem', fontWeight: 600 }}
-              />
-            </ReferenceLine>
-            <ReferenceLine
               y={landingPoint.weight}
-              stroke="green"
-              strokeWidth={1.5}
-              strokeDasharray="5 3"
-            >
-              <Label
-                value={`${landingPoint.weight.toFixed(0)}`}
-                position="left"
-                fill="green"
-                style={{ fontSize: '0.8rem', fontWeight: 600 }}
-              />
-            </ReferenceLine>
-            {aircraftType === 'C-172' && (
-              <>
-                <ReferenceLine
-                  y={totalWeight}
-                  stroke="orange"
-                  strokeWidth={1.5}
-                  strokeDasharray="5 3"
-                >
-                  <Label
-                    value={`A.U.W: ${totalWeight.toFixed(0)}`}
-                    position="left"
-                    fill="orange"
-                    style={{ fontSize: '0.8rem', fontWeight: 600 }}
-                  />
-                </ReferenceLine>
-                <ReferenceLine
-                  x={totalMoment / 1000}
-                  stroke="orange"
-                  strokeWidth={1.5}
-                  strokeDasharray="5 3"
-                >
-                  <Label
-                    value={`Moment/1000: ${(totalMoment / 1000).toFixed(1)}`}
-                    position="top"
-                    fill="orange"
-                    style={{ fontSize: '0.8rem', fontWeight: 600 }}
-                  />
-                </ReferenceLine>
-                <ReferenceLine
-                  x={envelopeConfig.forwardLimit}
-                  stroke="#8884d8"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                >
-                  <Label
-                    value={`Forward Limit: ${envelopeConfig.forwardLimit.toFixed(1)}`}
-                    position="top"
-                    fill="#8884d8"
-                    style={{ fontSize: '0.8rem', fontWeight: 600 }}
-                  />
-                </ReferenceLine>
-                <ReferenceLine
-                  x={envelopeConfig.aftLimit}
-                  stroke="#8884d8"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                >
-                  <Label
-                    value={`Aft Limit: ${envelopeConfig.aftLimit.toFixed(1)}`}
-                    position="top"
-                    fill="#8884d8"
-                    style={{ fontSize: '0.8rem', fontWeight: 600 }}
-                  />
-                </ReferenceLine>
-              </>
-            )}
-            {isTakeoffOutOfEnvelope && (
-              <ReferenceLine
-                x={takeoffPoint.moment}
-                y={takeoffPoint.weight}
-                stroke="red"
-                strokeWidth={0}
-                label={{
-                  position: 'top',
-                  value: '⚠️ Takeoff C.O.G OUT OF LIMIT',
-                  fill: 'red',
-                  fontSize: 12,
-                  fontWeight: 'bold',
-                }}
-              />
-            )}
-            {isLandingOutOfEnvelope && (
-              <ReferenceLine
-                x={landingPoint.moment}
-                y={landingPoint.weight}
-                stroke="red"
-                strokeWidth={0}
-                label={{
-                  position: 'bottom',
-                  value: '⚠️ Landing C.O.G OUT OF LIMIT',
-                  fill: 'red',
-                  fontSize: 12,
-                  fontWeight: 'bold',
-                }}
-              />
-            )}
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="mt-16">
-        <h2 className="text-xl font-semibold mb-4 text-center">LOADING GRAPH</h2>
-        <ResponsiveContainer width="95%" height={500}>
-          <ComposedChart margin={{ top: 20, right: 40, bottom: 40, left: 60 }}>
-            <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} />
-            <XAxis
-              type="number"
-              dataKey="moment"
+              stroke="red"
+              strokeWidth={0}
               label={{
-                value: `LOAD MOMENT (${unitLabels.moment})`,
-                position: 'insideBottom',
-                offset: -10,
-                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
+                position: 'bottom',
+                value: '⚠️ Landing C.O.G OUT OF LIMIT',
+                fill: 'red',
+                fontSize: 12,
+                fontWeight: 'bold',
               }}
-              domain={[0, loadingGraphConfig.maxMoment]}
-              ticks={axisConfig.loading.xTicks}
-              tickFormatter={axisConfig.loading.xTickFormatter}
-              tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
-              interval={0}
-              allowDataOverflow={true}
             />
-            <YAxis
-              type="number"
-              dataKey="weight"
-              label={{
-                value: `LOAD WEIGHT (${unitLabels.weight})`,
-                angle: -90,
-                position: 'insideLeft',
-                offset: 0,
-                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
-              }}
-              domain={[0, loadingGraphConfig.maxWeight]}
-              ticks={axisConfig.loading.yTicks}
-              tickFormatter={axisConfig.loading.yTickFormatter}
-              tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
-              interval={0}
-              allowDataOverflow={true}
-            />
-            <Tooltip />
-            <Legend />
-            <ReferenceLine
-              segment={[{ x: (pilotPax.arm * loadingGraphConfig.pilotMaxWeight) / (aircraftType === 'C-172' ? 1000 : 1), y: loadingGraphConfig.pilotMaxWeight }, { x: 0, y: 0 }]}
-              stroke="#10B981"
-              strokeWidth={3}
-            />
-            {hasRearPax && (
-              <ReferenceLine
-                segment={[{ x: (rearPax.arm * loadingGraphConfig.rearPaxMaxWeight) / (aircraftType === 'C-172' ? 1000 : 1), y: loadingGraphConfig.rearPaxMaxWeight }, { x: 0, y: 0 }]}
-                stroke="#6366F1"
-                strokeWidth={3}
-              />
-            )}
-            <ReferenceLine
-              segment={[{ x: (fuel.arm * maxFuel) / (aircraftType === 'C-172' ? 1000 : 1), y: maxFuel }, { x: 0, y: 0 }]}
-              stroke="#F59E0B"
-              strokeWidth={3}
-            />
-            <ReferenceLine
-              segment={[{ x: (baggage1.arm * maxBaggage1) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage1 }, { x: 0, y: 0 }]}
-              stroke="#EF4444"
-              strokeWidth={3}
-            />
-            {maxBaggage2 > 0 && (
-              <ReferenceLine
-                segment={[{ x: (baggage2.arm * maxBaggage2) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage2 }, { x: 0, y: 0 }]}
-                stroke="#F59E0B"
-                strokeWidth={3}
-              />
-            )}
-            <ReferenceDot x={moments[0]} y={weightData[0].weight} r={5} fill="#10B981" stroke="#065F46" strokeWidth={2} />
-            {hasRearPax && <ReferenceDot x={moments[1]} y={weightData[1].weight} r={5} fill="#6366F1" stroke="#3730A3" strokeWidth={2} />}
-            <ReferenceDot x={moments[hasRearPax ? 2 : 1]} y={weightData[hasRearPax ? 2 : 1].weight} r={5} fill="#F59E0B" stroke="#B45309" strokeWidth={2} />
-            <ReferenceDot x={moments[hasRearPax ? 3 : 2]} y={weightData[hasRearPax ? 3 : 2].weight} r={5} fill="#EF4444" stroke="#991B1B" strokeWidth={2} />
-            {maxBaggage2 > 0 && <ReferenceDot x={moments[4]} y={weightData[4].weight} r={5} fill="#F59E0B" stroke="#B45309" strokeWidth={2} />}
-          </ComposedChart>
-        </ResponsiveContainer>
-        <div className="flex flex-wrap gap-4 mt-4 justify-center text-sm text-gray-700">
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10B981' }} /><span>PILOT & PAX</span></div>
-          {hasRearPax && <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6366F1' }} /><span>REAR PAX</span></div>}
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }} /><span>FUEL</span></div>
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#EF4444' }} /><span>BAGGAGE AREA 1</span></div>
-          {maxBaggage2 > 0 && <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }} /><span>BAGGAGE AREA 2</span></div>}
-        </div>
-      </div>
+          )}
+        </ComposedChart>
+      </ResponsiveContainer>
     </div>
+
+    <div className="mt-16">
+      <h2 className="text-xl font-semibold mb-4 text-center">LOADING GRAPH</h2>
+      <ResponsiveContainer width="95%" height={500}>
+        <ComposedChart margin={{ top: 20, right: 40, bottom: 40, left: 60 }}>
+          <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} />
+          <XAxis
+            type="number"
+            dataKey="moment"
+            label={{
+              value: `LOAD MOMENT (${unitLabels.moment})`,
+              position: 'insideBottom',
+              offset: -10,
+              style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
+            }}
+            domain={[0, loadingGraphConfig.maxMoment]}
+            ticks={axisConfig.loading.xTicks}
+            tickFormatter={axisConfig.loading.xTickFormatter}
+            tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
+            interval={0}
+            allowDataOverflow={true}
+          />
+          <YAxis
+            type="number"
+            dataKey="weight"
+            label={{
+              value: `LOAD WEIGHT (${unitLabels.weight})`,
+              angle: -90,
+              position: 'insideLeft',
+              offset: 0,
+              style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
+            }}
+            domain={[0, loadingGraphConfig.maxWeight]}
+            ticks={axisConfig.loading.yTicks}
+            tickFormatter={axisConfig.loading.yTickFormatter}
+            tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
+            interval={0}
+            allowDataOverflow={true}
+          />
+          <Tooltip />
+          <Legend />
+          <ReferenceLine
+            segment={[{ x: (pilotPax.arm * loadingGraphConfig.pilotMaxWeight) / (aircraftType === 'C-172' ? 1000 : 1), y: loadingGraphConfig.pilotMaxWeight }, { x: 0, y: 0 }]}
+            stroke="#10B981"
+            strokeWidth={3}
+          />
+          {hasRearPax && (
+            <ReferenceLine
+              segment={[{ x: (rearPax.arm * loadingGraphConfig.rearPaxMaxWeight) / (aircraftType === 'C-172' ? 1000 : 1), y: loadingGraphConfig.rearPaxMaxWeight }, { x: 0, y: 0 }]}
+              stroke="#6366F1"
+              strokeWidth={3}
+            />
+          )}
+          <ReferenceLine
+            segment={[{ x: (fuel.arm * maxFuel) / (aircraftType === 'C-172' ? 1000 : 1), y: maxFuel }, { x: 0, y: 0 }]}
+            stroke="#F59E0B"
+            strokeWidth={3}
+          />
+          <ReferenceLine
+            segment={[{ x: (baggage1.arm * maxBaggage1) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage1 }, { x: 0, y: 0 }]}
+            stroke="#EF4444"
+            strokeWidth={3}
+          />
+          {maxBaggage2 > 0 && (
+            <ReferenceLine
+              segment={[{ x: (baggage2.arm * maxBaggage2) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage2 }, { x: 0, y: 0 }]}
+            stroke="#F59E0B"
+            strokeWidth={3}
+          />
+        )}
+        <ReferenceDot x={moments[0]} y={weightData[0].weight} r={5} fill="#10B981" stroke="#065F46" strokeWidth={2} />
+        {hasRearPax && <ReferenceDot x={moments[1]} y={weightData[1].weight} r={5} fill="#6366F1" stroke="#3730A3" strokeWidth={2} />}
+        <ReferenceDot x={moments[hasRearPax ? 2 : 1]} y={weightData[hasRearPax ? 2 : 1].weight} r={5} fill="#F59E0B" stroke="#B45309" strokeWidth={2} />
+        <ReferenceDot x={moments[hasRearPax ? 3 : 2]} y={weightData[hasRearPax ? 3 : 2].weight} r={5} fill="#EF4444" stroke="#991B1B" strokeWidth={2} />
+        {maxBaggage2 > 0 && <ReferenceDot x={moments[4]} y={weightData[4].weight} r={5} fill="#F59E0B" stroke="#B45309" strokeWidth={2} />}
+      </ComposedChart>
+    </ResponsiveContainer>
+    <div className="flex flex-wrap gap-4 mt-4 justify-center text-sm text-gray-700">
+      <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10B981' }} /><span>PILOT & PAX</span></div>
+      {hasRearPax && <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6366F1' }} /><span>REAR PAX</span></div>}
+      <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }} /><span>FUEL</span></div>
+      <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#EF4444' }} /><span>BAGGAGE AREA 1</span></div>
+      {maxBaggage2 > 0 && <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }} /><span>BAGGAGE AREA 2</span></div>}
+    </div>
+  </div>
+</div>
   );
 };
 
-const fuelItems = [
-  "Destination",
-  "Alternate",
-  "10% of D&A",
-  "Reserve",
-  "Extra",
-];
+const MinimumLegalFuel = ({ aircraftType }) => {
+  const [fuelData, setFuelData] = useState({
+    Destination: { hr: 0, min: 0, usg: 0 },
+    Alternate: { hr: 0, min: 0, usg: 0 },
+    '10% of D&A': { hr: 0, min: 0, usg: 0 },
+    Reserve: { hr: 0, min: 45, usg: 0 },
+    Extra: { hr: 0, min: 0, usg: 0 },
+  });
 
-const MinimumLegalFuel = ({ unitLabel, aircraftType }) => {
-  const [fuelData, setFuelData] = useState(
-    fuelItems.map((label) => ({
-      label,
-      hr: 0,
-      min: label === "Reserve" ? 45 : 0,
-      usg: label === "Reserve" ? (
-        aircraftType === 'C-172' ? (45 / 60 * (53 / 4.5)).toFixed(2) : 
-        (45 / 60 * (23 / 4)).toFixed(2)
-      ) : 0,
-    }))
-  );
+  const [lastEdited, setLastEdited] = useState(null);
+
+  const fuelRates = {
+    'C-150': 5.75,
+    'C-172': 11.78,
+  };
+
+  const maxGallons = {
+    'C-150': 23,
+    'C-172': 53,
+  };
+
+  const maxEnduranceHours = {
+    'C-150': 4,
+    'C-172': 4.5,
+  };
 
   useEffect(() => {
-    console.log('MinimumLegalFuel aircraftType updated:', aircraftType); // Debug log
-    setFuelData(
-      fuelItems.map((label) => {
-        const existing = fuelData.find(item => item.label === label) || {};
-        const hr = label === "Reserve" ? 0 : (existing.hr || 0);
-        const min = label === "Reserve" ? 45 : (existing.min || 0);
-        const isC172 = aircraftType === 'C-172';
-        const usg = label === "Reserve" ? (
-          isC172 ? (45 / 60 * (53 / 4.5)).toFixed(2) : (45 / 60 * (23 / 4)).toFixed(2)
-        ) : calculateFuelUsage(hr, min, isC172);
-        return { label, hr, min, usg };
-      })
-    );
+    setFuelData(prev => ({
+      ...prev,
+      Reserve: {
+        ...prev.Reserve,
+        usg: calculateFuelUsage(0, 45, aircraftType === 'C-172'),
+      },
+    }));
   }, [aircraftType]);
 
   const calculateFuelUsage = (hours, minutes, isC172) => {
     const totalHours = (parseFloat(hours) || 0) + (parseFloat(minutes) || 0) / 60;
-    if (isC172) {
-      // C-172: 4.5 hours = 53 gallons
-      const gallonsPerHour = 53 / 4.5; // ~11.7778 gallons/hour
-      return (totalHours * gallonsPerHour).toFixed(2);
-    } else {
-      // C-150: 4.5 hours = 23 gallons
-      const gallonsPerHour = 23 / 4; // 5.111
-      return (totalHours * gallonsPerHour).toFixed(2);
-    }
+    const rate = isC172 ? fuelRates['C-172'] : fuelRates['C-150'];
+    return Math.round(totalHours * rate * 100) / 100;
   };
 
-  const handleChange = (index, field, value) => {
+  const handleInputChange = (category, field, value) => {
     if (value === '' || (/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0)) {
-      const updated = [...fuelData];
-      updated[index][field] = value === '' ? 0 : Number(value);
+      const numericValue = field === 'min' ? Math.min(59, parseInt(value) || 0) : parseFloat(value) || 0;
+      setFuelData(prev => {
+        const updated = { ...prev, [category]: { ...prev[category], [field]: numericValue } };
+        setLastEdited(category);
 
-      // Recalculate usg for time-based categories
-      if (['Destination', 'Alternate', 'Reserve', 'Extra'].includes(updated[index].label)) {
-        updated[index].usg = calculateFuelUsage(updated[index].hr, updated[index].min, aircraftType === 'C-172');
-      }
+        if (['Destination', 'Alternate', 'Reserve', 'Extra'].includes(category)) {
+          updated[category].usg = calculateFuelUsage(updated[category].hr, updated[category].min, aircraftType === 'C-172');
+        }
 
-      // Update 10% of D&A
-      const daIndex = fuelItems.indexOf('10% of D&A');
-      if (daIndex !== -1) {
-        const destinationUsage = parseFloat(updated.find(item => item.label === 'Destination')?.usg || 0);
-        const alternateUsage = parseFloat(updated.find(item => item.label === 'Alternate')?.usg || 0);
-        updated[daIndex].usg = ((destinationUsage + alternateUsage) * 0.1).toFixed(2);
-      }
+        const daUsg = (parseFloat(updated.Destination.usg || 0) + parseFloat(updated.Alternate.usg || 0)) * 0.1;
+        updated['10% of D&A'].usg = Math.round(daUsg * 100) / 100;
+        const daTotalHours = daUsg / (aircraftType === 'C-172' ? fuelRates['C-172'] : fuelRates['C-150']);
+        updated['10% of D&A'].hr = Math.floor(daTotalHours);
+        updated['10% of D&A'].min = Math.round((daTotalHours % 1) * 60);
 
-      setFuelData(updated);
+        let totalHours = 0;
+        Object.values(updated).forEach(item => {
+          totalHours += item.hr + (item.min / 60);
+        });
+        if (totalHours > maxEnduranceHours[aircraftType]) {
+          const excessHours = totalHours - maxEnduranceHours[aircraftType];
+          if (lastEdited) {
+            const currentHours = updated[lastEdited].hr + (updated[lastEdited].min / 60);
+            const newHours = Math.max(0, currentHours - excessHours);
+            updated[lastEdited].hr = Math.floor(newHours);
+            updated[lastEdited].min = Math.round((newHours % 1) * 60);
+            updated[lastEdited].usg = calculateFuelUsage(updated[lastEdited].hr, updated[lastEdited].min, aircraftType === 'C-172');
+            const newDaUsg = (parseFloat(updated.Destination.usg || 0) + parseFloat(updated.Alternate.usg || 0)) * 0.1;
+            updated['10% of D&A'].usg = Math.round(newDaUsg * 100) / 100;
+            const newDaTotalHours = newDaUsg / (aircraftType === 'C-172' ? fuelRates['C-172'] : fuelRates['C-150']);
+            updated['10% of D&A'].hr = Math.floor(newDaTotalHours);
+            updated['10% of D&A'].min = Math.round((newDaTotalHours % 1) * 60);
+          }
+        }
+
+        const totalGallons = Object.values(updated).reduce((sum, item) => sum + parseFloat(item.usg || 0), 0);
+        if (totalGallons > maxGallons[aircraftType]) {
+          const excessGallons = totalGallons - maxGallons[aircraftType];
+          if (lastEdited) {
+            const newUsg = Math.max(0, updated[lastEdited].usg - excessGallons);
+            updated[lastEdited].usg = Math.round(newUsg * 100) / 100;
+            const totalHours = updated[lastEdited].usg / (aircraftType === 'C-172' ? fuelRates['C-172'] : fuelRates['C-150']);
+            updated[lastEdited].hr = Math.floor(totalHours);
+            updated[lastEdited].min = Math.round((totalHours % 1) * 60);
+            const newDaUsg = (parseFloat(updated.Destination.usg || 0) + parseFloat(updated.Alternate.usg || 0)) * 0.1;
+            updated['10% of D&A'].usg = Math.round(newDaUsg * 100) / 100;
+            const newDaTotalHours = newDaUsg / (aircraftType === 'C-172' ? fuelRates['C-172'] : fuelRates['C-150']);
+            updated['10% of D&A'].hr = Math.floor(newDaTotalHours);
+            updated['10% of D&A'].min = Math.round((newDaTotalHours % 1) * 60);
+          }
+        }
+
+        return updated;
+      });
     }
   };
 
-  const total = fuelData.reduce(
-    (acc, curr) => {
-      acc.hr += parseFloat(curr.hr) || 0;
-      acc.min += parseFloat(curr.min) || 0;
-      acc.usg += parseFloat(curr.usg) || 0;
-      return acc;
-    },
+  const total = Object.values(fuelData).reduce(
+    (acc, curr) => ({
+      hr: acc.hr + (parseFloat(curr.hr) || 0),
+      min: acc.min + (parseFloat(curr.min) || 0),
+      usg: acc.usg + (parseFloat(curr.usg) || 0),
+    }),
     { hr: 0, min: 0, usg: 0 }
   );
 
@@ -686,64 +709,52 @@ const MinimumLegalFuel = ({ unitLabel, aircraftType }) => {
   const normalizedMin = total.min % 60;
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Minimum Legal Fuel</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full table-auto border border-gray-200 rounded-lg">
-          <thead className="bg-indigo-100 text-indigo-700">
-            <tr>
-              <th className="p-3 border-b text-left font-semibold">Category</th>
-              <th className="p-3 border-b text-left font-semibold">Hours</th>
-              <th className="p-3 border-b text-left font-semibold">Minutes</th>
-              <th className="p-3 border-b text-left font-semibold">Fuel Usage (Gallons)</th>
+    <div className="bg-gray-50 p-6 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-4 text-center">Minimum Legal Fuel - {aircraftType}</h2>
+      <table className="w-full border-collapse border border-gray-300">
+        <thead>
+          <tr className="bg-indigo-100 text-indigo-700">
+            <th className="border px-4 py-2">Category</th>
+            <th className="border px-4 py-2">Hours</th>
+            <th className="border px-4 py-2">Minutes</th>
+            <th className="border px-4 py-2">Gallons</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(fuelData).map(([category, { hr, min, usg }]) => (
+            <tr key={category} className="border-b hover:bg-gray-100">
+              <td className="border px-4 py-2">{category}</td>
+              <td className="border px-4 py-2">
+                <input
+                  type="number"
+                  value={hr}
+                  onChange={(e) => handleInputChange(category, 'hr', e.target.value)}
+                  className="border rounded px-2 py-1 w-full"
+                  min="0"
+                />
+              </td>
+              <td className="border px-4 py-2">
+                <input
+                  type="number"
+                  value={min}
+                  onChange={(e) => handleInputChange(category, 'min', e.target.value)}
+                  className="border rounded px-2 py-1 w-full"
+                  min="0"
+                  max="59"
+                />
+              </td>
+              <td className="border px-4 py-2">{usg.toFixed(2)}</td>
             </tr>
-          </thead>
-          <tbody>
-            {fuelData.map((item, index) => (
-              <tr key={item.label} className="hover:bg-gray-50">
-                <td className="border-b p-3 text-gray-700">{item.label}</td>
-                <td className="border-b p-3">
-                  <input
-                    type="number"
-                    value={item.hr}
-                    disabled={item.label === "Reserve"}
-                    onChange={(e) => handleChange(index, "hr", e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-200"
-                    placeholder="0"
-                  />
-                </td>
-                <td className="border-b p-3">
-                  <input
-                    type="number"
-                    value={item.min}
-                    disabled={item.label === "Reserve"}
-                    onChange={(e) => handleChange(index, "min", e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-200"
-                    placeholder="0"
-                  />
-                </td>
-                <td className="border-b p-3">
-                  <input
-                    type="number"
-                    value={item.usg}
-                    disabled={['Destination', 'Alternate', '10% of D&A', 'Reserve', 'Extra'].includes(item.label)}
-                    onChange={(e) => handleChange(index, "usg", e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2 py-1 bg-gray-100 cursor-not-allowed disabled:bg-gray-100"
-                    placeholder="0"
-                    readOnly={['Destination', 'Alternate', '10% of D&A', 'Reserve', 'Extra'].includes(item.label)}
-                  />
-                </td>
-              </tr>
-            ))}
-            <tr className="bg-indigo-50 font-semibold text-gray-800">
-              <td className="border-b p-3">Total Endurance</td>
-              <td className="border-b p-3">{normalizedHr}</td>
-              <td className="border-b p-3">{normalizedMin}</td>
-              <td className="border-b p-3">{total.usg.toFixed(2)} Gallons</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          ))}
+          <tr className="bg-gray-200 font-bold">
+            <td className="border px-4 py-2">Total Endurance</td>
+            <td className="border px-4 py-2">{Math.floor(normalizedHr)}</td>
+            <td className="border px-4 py-2">{normalizedMin}</td>
+            <td className="border px-4 py-2">{total.usg.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p className="mt-4 text-sm text-gray-600">Max usage: {maxGallons[aircraftType]} gallons, Max endurance: {maxEnduranceHours[aircraftType]} hours</p>
     </div>
   );
 };
@@ -751,7 +762,7 @@ const MinimumLegalFuel = ({ unitLabel, aircraftType }) => {
 const Homepage = () => {
   const [activeTab, setActiveTab] = useState('Sheet');
   const [activeAircraftTab, setActiveAircraftTab] = useState('C-150');
-  const [userEmail, setUserEmail] = useState(''); // Add userEmail state here
+  const [userEmail, setUserEmail] = useState('');
 
   const aircraftConfigs = {
     'C-150': {
@@ -778,7 +789,7 @@ const Homepage = () => {
         envelope: {
           xTicks: Array.from({ length: 36 }, (_, i) => 400 + i * 10),
           xTickFormatter: (value) => (value % 50 === 0 ? value.toFixed(0) : ''),
-          yTicks: Array.from({ length: 51 }, (_, i) => 500 + i * 5),
+          yTicks: Array.from({ length: 61 }, (_, i) => 500 + i * 5),
           yTickFormatter: (value) => (value % 50 === 0 ? value.toFixed(0) : ''),
         },
         loading: {
@@ -811,7 +822,7 @@ const Homepage = () => {
         forwardLimit: 35,
         aftLimit: 47.3,
         momentMin: 50,
-        momentMax: 108.79,
+        momentMax: 120,
       },
       loadingGraphConfig: {
         pilotMaxWeight: 400,
@@ -823,7 +834,7 @@ const Homepage = () => {
         envelope: {
           xTicks: Array.from({ length: 14 }, (_, i) => 50 + i * 5),
           xTickFormatter: (value) => value.toFixed(1),
-          yTicks: Array.from({ length: 12 }, (_, i) => 1500 + i * 100),
+          yTicks: Array.from({ length: 10 }, (_, i) => 1500 + i * 100),
           yTickFormatter: (value) => value.toFixed(0),
         },
         loading: {
@@ -957,12 +968,12 @@ const Homepage = () => {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem('token'); // Adjust based on your token storage
+      const token = localStorage.getItem('token');
       await axios.post('/api/auth/logout', {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      localStorage.removeItem('token'); // Clear token
-      window.location.href = '/login'; // Redirect to login page
+      localStorage.removeItem('token');
+      window.location.href = '/login';
     } catch (error) {
       console.error('Error during logout:', error);
       alert('Failed to logout. Please try again.');
@@ -980,7 +991,7 @@ const Homepage = () => {
         html: htmlContent,
         email: userEmail,
         aircraftType: activeAircraftTab,
-        date: new Date().toLocaleString('en-US', { timeZone: 'EAT' }), // Current date and time in EAT
+        date: new Date().toLocaleString('en-US', { timeZone: 'EAT' }),
       });
       if (response.data.success) {
         alert('PDF sent to your email!');
@@ -992,6 +1003,70 @@ const Homepage = () => {
       alert('An error occurred while sending the PDF.');
     }
   };
+
+const handleDownloadPDF = async () => {
+  const section = document.getElementById("weight-balance-section");
+  if (!section) return alert("Section not found");
+
+  const email = localStorage.getItem("email");
+  if (!email) {
+    alert("Email not found. Please log in again.");
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      "/api/generate-pdf",
+      {
+        html: section.outerHTML,
+        aircraftType: activeAircraftTab,
+        date: new Date().toLocaleString("en-GB", { timeZone: "Africa/Nairobi" }),
+        email,
+        download: true,
+      },
+      {
+        responseType: "arraybuffer",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Log response details for debugging
+    const contentType = response.headers["content-type"] || "application/pdf";
+    console.log("Response details:", {
+      contentType,
+      dataLength: response.data.byteLength,
+      status: response.status,
+    });
+
+    // Validate response data
+    if (!response.data || response.data.byteLength === 0) {
+      throw new Error("Empty PDF response data");
+    }
+
+    if (contentType !== "application/pdf") {
+      console.warn("Unexpected Content-Type:", contentType);
+    }
+
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    console.log("Blob size:", blob.size);
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const safeAircraftTab = activeAircraftTab.replace(/[^a-zA-Z0-9]/g, "-");
+    const filename = `weight_and_balance_${safeAircraftTab}_${Date.now()}.pdf`;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Download error:", err);
+    alert(`Failed to download PDF: ${err.message || "Unknown error"}`);
+  }
+};
 
   const TabButton = ({ label, isActive, onClick }) => (
     <button
@@ -1023,10 +1098,10 @@ const Homepage = () => {
             <div className="flex items-center space-x-8">
               <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
                 <div className="grid grid-cols-2 gap-0.5">
-                  <div className="w-1.5 h-1.5 bg-white rounded-square"></div>
-                  <div className="w-1.5 h-1.5 bg-white rounded-square"></div>
-                  <div className="w-1.5 h-1.5 bg-white rounded-square"></div>
-                  <div className="w-1.5 h-1.5 bg-white rounded-square"></div>
+                  <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
                 </div>
               </div>
               <nav className="flex space-x-6">
@@ -1089,7 +1164,7 @@ const Homepage = () => {
                     saveToDatabase={saveToDatabase}
                     aircraftConfig={aircraftConfigs[activeAircraftTab]}
                   />
-                  <div className="mt-6 flex items-center justify-center">
+                  <div className="mt-6 flex items-center justify-center space-x-2">
                     <input
                       type="email"
                       value={userEmail}
@@ -1099,9 +1174,15 @@ const Homepage = () => {
                     />
                     <button
                       onClick={(e) => { e.preventDefault(); handleGenerateAndSendPDF(); }}
-                      className="ml-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                      className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
                     >
                       Generate and Send PDF
+                    </button>
+                    <button
+                      onClick={handleDownloadPDF}
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Download PDF
                     </button>
                   </div>
                 </div>
@@ -1125,11 +1206,11 @@ const Homepage = () => {
                 </div>
               )}
               {activeTab === 'Fuel' && (
-               <MinimumLegalFuel 
-                    unitLabel={aircraftConfigs[activeAircraftTab].unitLabels.weight} 
-                   aircraftType={activeAircraftTab} 
-                  />
-                )}
+                <MinimumLegalFuel 
+                  unitLabel={aircraftConfigs[activeAircraftTab].unitLabels.weight} 
+                  aircraftType={activeAircraftTab} 
+                />
+              )}
             </div>
           </div>
         </main>
