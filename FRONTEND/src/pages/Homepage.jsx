@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import html2canvas from 'html2canvas';
 import axios from 'axios';
 import {
   ComposedChart,
@@ -980,29 +981,76 @@ const Homepage = () => {
     }
   };
 
-  const handleGenerateAndSendPDF = async () => {
-    if (!userEmail) {
-      alert('Please enter an email address.');
-      return;
-    }
-    const htmlContent = document.getElementById('weight-balance-section').outerHTML;
+
+const captureGraphs = async () => {
+  const graphSections = document.querySelectorAll('#weight-balance-section > div');
+  const graphImages = [];
+
+  // Expected sections: [0] for table, [1] for CoG graph, [2] for Loading graph
+  if (graphSections.length < 3) {
+    console.warn(`Expected at least 3 sections, found ${graphSections.length}`);
+    return graphImages;
+  }
+
+  // CoG Moment Envelope (capture .recharts-wrapper only)
+  const cogGraph = graphSections[1].querySelector('.recharts-wrapper');
+  if (cogGraph) {
     try {
-      const response = await axios.post('/api/generate-pdf', {
-        html: htmlContent,
-        email: userEmail,
-        aircraftType: activeAircraftTab,
-        date: new Date().toLocaleString('en-US', { timeZone: 'EAT' }),
-      });
-      if (response.data.success) {
-        alert('PDF sent to your email!');
-      } else {
-        alert('Failed to send PDF.');
-      }
-    } catch (error) {
-      console.error('Error sending PDF:', error);
-      alert('An error occurred while sending the PDF.');
+      const canvas = await html2canvas(cogGraph, { scale: 2, useCORS: true });
+      const dataUrl = canvas.toDataURL('image/png');
+      graphImages.push(dataUrl);
+      console.log(`Captured CoG graph: ${dataUrl.substring(0, 50)}...`);
+    } catch (err) {
+      console.error('Error capturing CoG graph:', err);
     }
-  };
+  } else {
+    console.warn('CoG graph .recharts-wrapper not found');
+  }
+
+  // Loading Graph (capture entire section to include legend)
+  const loadingGraphSection = graphSections[2];
+  if (loadingGraphSection) {
+    try {
+      const canvas = await html2canvas(loadingGraphSection, { scale: 2, useCORS: true });
+      const dataUrl = canvas.toDataURL('image/png');
+      graphImages.push(dataUrl);
+      console.log(`Captured Loading graph with legend: ${dataUrl.substring(0, 50)}...`);
+    } catch (err) {
+      console.error('Error capturing Loading graph:', err);
+    }
+  } else {
+    console.warn('Loading graph section not found');
+  }
+
+  console.log(`Captured ${graphImages.length} graphs`);
+  return graphImages;
+};
+
+const handleGenerateAndSendPDF = async () => {
+  if (!userEmail) {
+    alert('Please enter an email address.');
+    return;
+  }
+  const htmlContent = document.getElementById('weight-balance-section').outerHTML;
+  const graphImages = await captureGraphs(); // Capture graphs
+  try {
+    const response = await axios.post('/api/generate-pdf', {
+      html: htmlContent,
+      email: userEmail,
+      aircraftType: activeAircraftTab,
+      date: new Date().toLocaleString('en-US', { timeZone: 'EAT' }),
+      graphImages, // Include graph images
+    });
+    if (response.data.success) {
+      alert('PDF sent to your email!');
+    } else {
+      alert('Failed to send PDF.');
+    }
+  } catch (error) {
+    console.error('Error sending PDF:', error);
+    alert('An error occurred while sending the PDF.');
+  }
+};
 
 const handleDownloadPDF = async () => {
   const section = document.getElementById("weight-balance-section");
@@ -1014,6 +1062,7 @@ const handleDownloadPDF = async () => {
     return;
   }
 
+  const graphImages = await captureGraphs(); // Capture graphs
   try {
     const response = await axios.post(
       "/api/generate-pdf",
@@ -1023,6 +1072,7 @@ const handleDownloadPDF = async () => {
         date: new Date().toLocaleString("en-GB", { timeZone: "Africa/Nairobi" }),
         email,
         download: true,
+        graphImages, // Include graph images
       },
       {
         responseType: "arraybuffer",
