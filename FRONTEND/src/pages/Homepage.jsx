@@ -16,8 +16,7 @@ import {
   Customized,
 } from 'recharts';
 
-const isPositiveNumber = (val) => /^\d*\.?\d*$/.test(String(val).trim());
-
+// WeightBalanceTable and MinimumLegalFuel components remain unchanged
 const WeightBalanceTable = ({
   basicEmpty,
   setBasicEmpty,
@@ -41,6 +40,7 @@ const WeightBalanceTable = ({
   landingMoment,
   saveToDatabase,
   aircraftConfig,
+  pilotInfo, // New prop for pilot information
 }) => {
   const {
     aircraftType,
@@ -53,6 +53,8 @@ const WeightBalanceTable = ({
     loadingGraphConfig,
     axisConfig,
   } = aircraftConfig;
+
+  const isPositiveNumber = (val) => /^\d*\.?\d*$/.test(String(val).trim());
 
   const handleInputChange = (e, state, setState, isArmEditable = true, maxLimit = null) => {
     const { name, value } = e.target;
@@ -234,7 +236,54 @@ const WeightBalanceTable = ({
 
   return (
     <div id="weight-balance-section" className="bg-gray-50 min-h-screen font-sans">
-      <h2 className="text-3xl font-bold mb-8 text-center text-gray-700">Weight and Balance Sheet - {aircraftType}</h2>
+      {/* Pilot Information Section */}
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-4 text-gray-700">Pilot and Flight Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Pilot Name</label>
+            <input
+              type="text"
+              value={pilotInfo.pilotName}
+              onChange={(e) => pilotInfo.setPilotInfo({ ...pilotInfo, pilotName: e.target.value })}
+              className="border rounded px-2 py-1 w-full"
+              placeholder="Enter pilot name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Route</label>
+            <input
+              type="text"
+              value={pilotInfo.route}
+              onChange={(e) => pilotInfo.setPilotInfo({ ...pilotInfo, route: e.target.value })}
+              className="border rounded px-2 py-1 w-full"
+              placeholder="Enter route (e.g., KJFK-KLAX)"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Date</label>
+            <input
+              type="date"
+              value={pilotInfo.date}
+              onChange={(e) => pilotInfo.setPilotInfo({ ...pilotInfo, date: e.target.value })}
+              className="border rounded px-2 py-1 w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Aircraft Registration</label>
+            <input
+              type="text"
+              value={pilotInfo.registration}
+              onChange={(e) => pilotInfo.setPilotInfo({ ...pilotInfo, registration: e.target.value })}
+              className="border rounded px-2 py-1 w-full"
+              placeholder="Enter aircraft registration"
+            />
+          </div>
+        </div>
+      </div>
+      <h2 className="text-3xl font-bold mb-8 text-center text-gray-700">
+        Weight and Balance Sheet - {aircraftType} {pilotInfo.registration && `(${pilotInfo.registration})`}
+      </h2>
       <table className="w-full border-collapse border border-gray-300 shadow-sm">
         <thead>
           <tr className="bg-indigo-100 text-indigo-700 text-left">
@@ -281,318 +330,318 @@ const WeightBalanceTable = ({
             <tr className="border-b hover:bg-gray-100">
               <td className="px-4 py-3 font-semibold">BAGGAGE AREA 2 (MAX {maxBaggage2} {unitLabels.weight})</td>
               <td><input type="text" name="weight" value={baggage2.weight} onChange={(e) => handleInputChange(e, baggage2, setBaggage2, false, maxBaggage2)} className="border rounded px-2 py-1 w-full" /></td>
-            <td><input type="text" value={baggage2.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-            <td><input type="text" value={baggage2.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-          </tr>
-        )}
-        <tr className="bg-gray-200 font-bold">
-          <td className="px-4 py-3">A.U.W. (MAX {envelopeConfig.maxWeight} {unitLabels.weight})</td>
-          <td><input type="text" value={totalWeight.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-          <td><input type="text" value={`TAKEOFF C.O.G: ${takeoffCOG}`} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed font-semibold" /></td>
-          <td><input type="text" value={totalMoment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-        </tr>
-        <tr className="border-t">
-          <td className="px-4 py-3 font-semibold">EST FUEL BURN OFF {aircraftType === 'C-150' ? 14 : 48} {unitLabels.weight}/HR</td>
-          <td><input type="text" name="weight" value={fuelBurn.weight} onChange={(e) => handleInputChange(e, fuelBurn, setFuelBurn, false, parseFloat(fuel.weight) || maxFuel)} className="border rounded px-2 py-1 w-full" /></td>
-          <td><input type="text" value={fuelBurn.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-          <td><input type="text" value={fuelBurn.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-        </tr>
-        <tr className="bg-gray-200 font-bold">
-          <td className="px-4 py-3">LANDING WEIGHT</td>
-          <td><input type="text" value={landingWeight.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-          <td><input type="text" value={`LANDING C.O.G: ${landingCOG}`} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed font-semibold" /></td>
-          <td><input type="text" value={landingMoment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div className="mt-6 text-center">
-      <button onClick={saveToDatabase} className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
-        Save Sheet
-      </button>
-    </div>
-
-    <div className="mt-12">
-      <h2 className="text-xl font-semibold mb-4 text-center">C.O.G MOMENT ENVELOPE</h2>
-      <ResponsiveContainer width="95%" height={500} minWidth={800}>
-        <ComposedChart data={envelopePoints} margin={{ top: 20, right: 40, left: 40, bottom: 60 }}>
-          <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} interval={4} />
-          <CartesianGrid stroke="rgba(0, 0, 0, 0.1)" strokeWidth={0.5} interval={0} vertical={true} horizontal={true} />
-          <XAxis
-            type="number"
-            dataKey="moment"
-            label={{
-              value: `LOADED AIRCRAFT MOMENT (${unitLabels.moment})`,
-              position: 'insideBottom',
-              offset: -10,
-              style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
-            }}
-            domain={[envelopeConfig.momentMin, envelopeConfig.momentMax]}
-            ticks={axisConfig.envelope.xTicks}
-            tickFormatter={axisConfig.envelope.xTickFormatter}
-            tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
-            height={50}
-            allowDataOverflow={true}
-          />
-          <YAxis
-            type="number"
-            dataKey="weight"
-            label={{
-              value: `LOADED AIRCRAFT WEIGHT (${unitLabels.weight})`,
-              angle: -90,
-              position: 'insideLeft',
-              offset: 7,
-              style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
-            }}
-            domain={[envelopeConfig.minWeight, aircraftType === 'C-150' ? 800 : 2400]}
-            ticks={axisConfig.envelope.yTicks}
-            tickFormatter={axisConfig.envelope.yTickFormatter}
-            tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
-            width={100}
-            interval={0}
-            allowDataOverflow={true}
-          />
-          <Tooltip
-            formatter={(value, name) => [value.toFixed(1), name]}
-          />
-          <Legend 
-            verticalAlign="bottom"
-            height={36}
-            wrapperStyle={{ paddingTop: 20 }}
-          />
-          <Customized component={drawEnvelopeArea} />
-          <Customized component={drawLabels} />
-          <Scatter data={[takeoffPoint]} name={`TAKEOFF C.O.G(${takeoffCOG})`} fill={isTakeoffOutOfEnvelope ? 'red' : 'brown'} shape="circle" r={8} />
-          <Scatter data={[landingPoint]} name={`LANDING C.O.G(${landingCOG})`} fill={isLandingOutOfEnvelope ? 'red' : 'green'} shape="square" r={8} />
-          <ReferenceLine
-            x={takeoffPoint.moment}
-            stroke="brown"
-            strokeWidth={1.5}
-            strokeDasharray="5 3"
-          >
-            <Label
-              value={`${takeoffPoint.moment.toFixed(1)}`}
-              position="top"
-              dx={5}
-              fill="brown"
-              style={{ fontSize: '0.8rem', fontWeight: 600 }}
-            />
-          </ReferenceLine>
-          <ReferenceLine
-            y={takeoffPoint.weight}
-            stroke="brown"
-            strokeWidth={1.5}
-            strokeDasharray="5 3"
-          >
-            <Label
-              value={`${takeoffPoint.weight.toFixed(0)}`}
-              position="left"
-              fill="brown"
-              style={{ fontSize: '0.8rem', fontWeight: 600 }}
-            />
-          </ReferenceLine>
-          <ReferenceLine
-            x={landingPoint.moment}
-            stroke="green"
-            strokeWidth={1.5}
-            strokeDasharray="5 3"
-          >
-            <Label
-              value={`${landingPoint.moment.toFixed(1)}`}
-              position="top"
-              dx={-5}
-              fill="green"
-              style={{ fontSize: '0.8rem', fontWeight: 600 }}
-            />
-          </ReferenceLine>
-          <ReferenceLine
-            y={landingPoint.weight}
-            stroke="green"
-            strokeWidth={1.5}
-            strokeDasharray="5 3"
-          >
-            <Label
-              value={`${landingPoint.weight.toFixed(0)}`}
-              position="left"
-              fill="green"
-              style={{ fontSize: '0.8rem', fontWeight: 600 }}
-            />
-          </ReferenceLine>
-          {aircraftType === 'C-172' && (
-            <>
-              <ReferenceLine
-                y={totalWeight}
-                stroke="orange"
-                strokeWidth={1.5}
-                strokeDasharray="5 3"
-              >
-                <Label
-                  value={`A.U.W: ${totalWeight.toFixed(0)}`}
-                  position="left"
-                  fill="orange"
-                  style={{ fontSize: '0.8rem', fontWeight: 600 }}
-                />
-              </ReferenceLine>
-              <ReferenceLine
-                x={totalMoment / 1000}
-                stroke="orange"
-                strokeWidth={1.5}
-                strokeDasharray="5 3"
-              >
-                <Label
-                  value={`Moment/1000: ${(totalMoment / 1000).toFixed(1)}`}
-                  position="top"
-                  fill="orange"
-                  style={{ fontSize: '0.8rem', fontWeight: 600 }}
-                />
-              </ReferenceLine>
-              <ReferenceLine
-                x={envelopeConfig.forwardLimit}
-                stroke="#8884d8"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-              >
-                <Label
-                  value={`Forward Limit: ${envelopeConfig.forwardLimit.toFixed(1)}`}
-                  position="top"
-                  fill="#8884d8"
-                  style={{ fontSize: '0.8rem', fontWeight: 600 }}
-                />
-              </ReferenceLine>
-              <ReferenceLine
-                x={envelopeConfig.aftLimit}
-                stroke="#8884d8"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-              >
-                <Label
-                  value={`Aft Limit: ${envelopeConfig.aftLimit.toFixed(1)}`}
-                  position="top"
-                  fill="#8884d8"
-                  style={{ fontSize: '0.8rem', fontWeight: 600 }}
-                />
-              </ReferenceLine>
-            </>
+              <td><input type="text" value={baggage2.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+              <td><input type="text" value={baggage2.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+            </tr>
           )}
-          {isTakeoffOutOfEnvelope && (
+          <tr className="bg-gray-200 font-bold">
+            <td className="px-4 py-3">A.U.W. (MAX {envelopeConfig.maxWeight} {unitLabels.weight})</td>
+            <td><input type="text" value={totalWeight.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+            <td><input type="text" value={`TAKEOFF C.O.G: ${takeoffCOG}`} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed font-semibold" /></td>
+            <td><input type="text" value={totalMoment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+          </tr>
+          <tr className="border-t">
+            <td className="px-4 py-3 font-semibold">EST FUEL BURN OFF {aircraftType === 'C-150' ? 14 : 48} {unitLabels.weight}/HR</td>
+            <td><input type="text" name="weight" value={fuelBurn.weight} onChange={(e) => handleInputChange(e, fuelBurn, setFuelBurn, false, parseFloat(fuel.weight) || maxFuel)} className="border rounded px-2 py-1 w-full" /></td>
+            <td><input type="text" value={fuelBurn.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+            <td><input type="text" value={fuelBurn.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+          </tr>
+          <tr className="bg-gray-200 font-bold">
+            <td className="px-4 py-3">LANDING WEIGHT</td>
+            <td><input type="text" value={landingWeight.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+            <td><input type="text" value={`LANDING C.O.G: ${landingCOG}`} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed font-semibold" /></td>
+            <td><input type="text" value={landingMoment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div className="mt-6 text-center">
+        <button onClick={saveToDatabase} className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+          Save Sheet
+        </button>
+      </div>
+
+      <div className="mt-12">
+        <h2 className="text-xl font-semibold mb-4 text-center">C.O.G MOMENT ENVELOPE</h2>
+        <ResponsiveContainer width="95%" height={500} minWidth={800}>
+          <ComposedChart data={envelopePoints} margin={{ top: 20, right: 40, left: 40, bottom: 60 }}>
+            <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} interval={4} />
+            <CartesianGrid stroke="rgba(0, 0, 0, 0.1)" strokeWidth={0.5} interval={0} vertical={true} horizontal={true} />
+            <XAxis
+              type="number"
+              dataKey="moment"
+              label={{
+                value: `LOADED AIRCRAFT MOMENT (${unitLabels.moment})`,
+                position: 'insideBottom',
+                offset: -10,
+                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
+              }}
+              domain={[envelopeConfig.momentMin, envelopeConfig.momentMax]}
+              ticks={axisConfig.envelope.xTicks}
+              tickFormatter={axisConfig.envelope.xTickFormatter}
+              tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
+              height={50}
+              allowDataOverflow={true}
+            />
+            <YAxis
+              type="number"
+              dataKey="weight"
+              label={{
+                value: `LOADED AIRCRAFT WEIGHT (${unitLabels.weight})`,
+                angle: -90,
+                position: 'insideLeft',
+                offset: 7,
+                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
+              }}
+              domain={[envelopeConfig.minWeight, aircraftType === 'C-150' ? 800 : 2400]}
+              ticks={axisConfig.envelope.yTicks}
+              tickFormatter={axisConfig.envelope.yTickFormatter}
+              tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
+              width={100}
+              interval={0}
+              allowDataOverflow={true}
+            />
+            <Tooltip
+              formatter={(value, name) => [value.toFixed(1), name]}
+            />
+            <Legend 
+              verticalAlign="bottom"
+              height={36}
+              wrapperStyle={{ paddingTop: 20 }}
+            />
+            <Customized component={drawEnvelopeArea} />
+            <Customized component={drawLabels} />
+            <Scatter data={[takeoffPoint]} name={`TAKEOFF C.O.G(${takeoffCOG})`} fill={isTakeoffOutOfEnvelope ? 'red' : 'brown'} shape="circle" r={8} />
+            <Scatter data={[landingPoint]} name={`LANDING C.O.G(${landingCOG})`} fill={isLandingOutOfEnvelope ? 'red' : 'green'} shape="square" r={8} />
             <ReferenceLine
               x={takeoffPoint.moment}
+              stroke="brown"
+              strokeWidth={1.5}
+              strokeDasharray="5 3"
+            >
+              <Label
+                value={`${takeoffPoint.moment.toFixed(1)}`}
+                position="top"
+                dx={5}
+                fill="brown"
+                style={{ fontSize: '0.8rem', fontWeight: 600 }}
+              />
+            </ReferenceLine>
+            <ReferenceLine
               y={takeoffPoint.weight}
-              stroke="red"
-              strokeWidth={0}
-              label={{
-                position: 'top',
-                value: '⚠️ Takeoff C.O.G OUT OF LIMIT',
-                fill: 'red',
-                fontSize: 12,
-                fontWeight: 'bold',
-              }}
-            />
-          )}
-          {isLandingOutOfEnvelope && (
+              stroke="brown"
+              strokeWidth={1.5}
+              strokeDasharray="5 3"
+            >
+              <Label
+                value={`${takeoffPoint.weight.toFixed(0)}`}
+                position="left"
+                fill="brown"
+                style={{ fontSize: '0.8rem', fontWeight: 600 }}
+              />
+            </ReferenceLine>
             <ReferenceLine
               x={landingPoint.moment}
-              y={landingPoint.weight}
-              stroke="red"
-              strokeWidth={0}
-              label={{
-                position: 'bottom',
-                value: '⚠️ Landing C.O.G OUT OF LIMIT',
-                fill: 'red',
-                fontSize: 12,
-                fontWeight: 'bold',
-              }}
-            />
-          )}
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
-
-    <div className="mt-16">
-      <h2 className="text-xl font-semibold mb-4 text-center">LOADING GRAPH</h2>
-      <ResponsiveContainer width="95%" height={500}>
-        <ComposedChart margin={{ top: 20, right: 40, bottom: 40, left: 60 }}>
-          <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} />
-          <XAxis
-            type="number"
-            dataKey="moment"
-            label={{
-              value: `LOAD MOMENT (${unitLabels.moment})`,
-              position: 'insideBottom',
-              offset: -10,
-              style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
-            }}
-            domain={[0, loadingGraphConfig.maxMoment]}
-            ticks={axisConfig.loading.xTicks}
-            tickFormatter={axisConfig.loading.xTickFormatter}
-            tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
-            interval={0}
-            allowDataOverflow={true}
-          />
-          <YAxis
-            type="number"
-            dataKey="weight"
-            label={{
-              value: `LOAD WEIGHT (${unitLabels.weight})`,
-              angle: -90,
-              position: 'insideLeft',
-              offset: 0,
-              style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
-            }}
-            domain={[0, loadingGraphConfig.maxWeight]}
-            ticks={axisConfig.loading.yTicks}
-            tickFormatter={axisConfig.loading.yTickFormatter}
-            tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
-            interval={0}
-            allowDataOverflow={true}
-          />
-          <Tooltip />
-          <Legend />
-          <ReferenceLine
-            segment={[{ x: (pilotPax.arm * loadingGraphConfig.pilotMaxWeight) / (aircraftType === 'C-172' ? 1000 : 1), y: loadingGraphConfig.pilotMaxWeight }, { x: 0, y: 0 }]}
-            stroke="#10B981"
-            strokeWidth={3}
-          />
-          {hasRearPax && (
+              stroke="green"
+              strokeWidth={1.5}
+              strokeDasharray="5 3"
+            >
+              <Label
+                value={`${landingPoint.moment.toFixed(1)}`}
+                position="top"
+                dx={-5}
+                fill="green"
+                style={{ fontSize: '0.8rem', fontWeight: 600 }}
+              />
+            </ReferenceLine>
             <ReferenceLine
-              segment={[{ x: (rearPax.arm * loadingGraphConfig.rearPaxMaxWeight) / (aircraftType === 'C-172' ? 1000 : 1), y: loadingGraphConfig.rearPaxMaxWeight }, { x: 0, y: 0 }]}
-              stroke="#6366F1"
+              y={landingPoint.weight}
+              stroke="green"
+              strokeWidth={1.5}
+              strokeDasharray="5 3"
+            >
+              <Label
+                value={`${landingPoint.weight.toFixed(0)}`}
+                position="left"
+                fill="green"
+                style={{ fontSize: '0.8rem', fontWeight: 600 }}
+              />
+            </ReferenceLine>
+            {aircraftType === 'C-172' && (
+              <>
+                <ReferenceLine
+                  y={totalWeight}
+                  stroke="orange"
+                  strokeWidth={1.5}
+                  strokeDasharray="5 3"
+                >
+                  <Label
+                    value={`A.U.W: ${totalWeight.toFixed(0)}`}
+                    position="left"
+                    fill="orange"
+                    style={{ fontSize: '0.8rem', fontWeight: 600 }}
+                  />
+                </ReferenceLine>
+                <ReferenceLine
+                  x={totalMoment / 1000}
+                  stroke="orange"
+                  strokeWidth={1.5}
+                  strokeDasharray="5 3"
+                >
+                  <Label
+                    value={`Moment/1000: ${(totalMoment / 1000).toFixed(1)}`}
+                    position="top"
+                    fill="orange"
+                    style={{ fontSize: '0.8rem', fontWeight: 600 }}
+                  />
+                </ReferenceLine>
+                <ReferenceLine
+                  x={envelopeConfig.forwardLimit}
+                  stroke="#8884d8"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                >
+                  <Label
+                    value={`Forward Limit: ${envelopeConfig.forwardLimit.toFixed(1)}`}
+                    position="top"
+                    fill="#8884d8"
+                    style={{ fontSize: '0.8rem', fontWeight: 600 }}
+                  />
+                </ReferenceLine>
+                <ReferenceLine
+                  x={envelopeConfig.aftLimit}
+                  stroke="#8884d8"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                >
+                  <Label
+                    value={`Aft Limit: ${envelopeConfig.aftLimit.toFixed(1)}`}
+                    position="top"
+                    fill="#8884d8"
+                    style={{ fontSize: '0.8rem', fontWeight: 600 }}
+                  />
+                </ReferenceLine>
+              </>
+            )}
+            {isTakeoffOutOfEnvelope && (
+              <ReferenceLine
+                x={takeoffPoint.moment}
+                y={takeoffPoint.weight}
+                stroke="red"
+                strokeWidth={0}
+                label={{
+                  position: 'top',
+                  value: '⚠️ Takeoff C.O.G OUT OF LIMIT',
+                  fill: 'red',
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                }}
+              />
+            )}
+            {isLandingOutOfEnvelope && (
+              <ReferenceLine
+                x={landingPoint.moment}
+                y={landingPoint.weight}
+                stroke="red"
+                strokeWidth={0}
+                label={{
+                  position: 'bottom',
+                  value: '⚠️ Landing C.O.G OUT OF LIMIT',
+                  fill: 'red',
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                }}
+              />
+            )}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="mt-16">
+        <h2 className="text-xl font-semibold mb-4 text-center">LOADING GRAPH</h2>
+        <ResponsiveContainer width="95%" height={500}>
+          <ComposedChart margin={{ top: 20, right: 40, bottom: 40, left: 60 }}>
+            <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} />
+            <XAxis
+              type="number"
+              dataKey="moment"
+              label={{
+                value: `LOAD MOMENT (${unitLabels.moment})`,
+                position: 'insideBottom',
+                offset: -10,
+                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
+              }}
+              domain={[0, loadingGraphConfig.maxMoment]}
+              ticks={axisConfig.loading.xTicks}
+              tickFormatter={axisConfig.loading.xTickFormatter}
+              tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
+              interval={0}
+              allowDataOverflow={true}
+            />
+            <YAxis
+              type="number"
+              dataKey="weight"
+              label={{
+                value: `LOAD WEIGHT (${unitLabels.weight})`,
+                angle: -90,
+                position: 'insideLeft',
+                offset: 0,
+                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
+              }}
+              domain={[0, loadingGraphConfig.maxWeight]}
+              ticks={axisConfig.loading.yTicks}
+              tickFormatter={axisConfig.loading.yTickFormatter}
+              tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
+              interval={0}
+              allowDataOverflow={true}
+            />
+            <Tooltip />
+            <Legend />
+            <ReferenceLine
+              segment={[{ x: (pilotPax.arm * loadingGraphConfig.pilotMaxWeight) / (aircraftType === 'C-172' ? 1000 : 1), y: loadingGraphConfig.pilotMaxWeight }, { x: 0, y: 0 }]}
+              stroke="#10B981"
               strokeWidth={3}
             />
-          )}
-          <ReferenceLine
-            segment={[{ x: (fuel.arm * maxFuel) / (aircraftType === 'C-172' ? 1000 : 1), y: maxFuel }, { x: 0, y: 0 }]}
-            stroke="#F59E0B"
-            strokeWidth={3}
-          />
-          <ReferenceLine
-            segment={[{ x: (baggage1.arm * maxBaggage1) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage1 }, { x: 0, y: 0 }]}
-            stroke="#EF4444"
-            strokeWidth={3}
-          />
-          {maxBaggage2 > 0 && (
+            {hasRearPax && (
+              <ReferenceLine
+                segment={[{ x: (rearPax.arm * loadingGraphConfig.rearPaxMaxWeight) / (aircraftType === 'C-172' ? 1000 : 1), y: loadingGraphConfig.rearPaxMaxWeight }, { x: 0, y: 0 }]}
+                stroke="#6366F1"
+                strokeWidth={3}
+              />
+            )}
             <ReferenceLine
-              segment={[{ x: (baggage2.arm * maxBaggage2) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage2 }, { x: 0, y: 0 }]}
-            stroke="#F59E0B"
-            strokeWidth={3}
-          />
-        )}
-        <ReferenceDot x={moments[0]} y={weightData[0].weight} r={5} fill="#10B981" stroke="#065F46" strokeWidth={2} />
-        {hasRearPax && <ReferenceDot x={moments[1]} y={weightData[1].weight} r={5} fill="#6366F1" stroke="#3730A3" strokeWidth={2} />}
-        <ReferenceDot x={moments[hasRearPax ? 2 : 1]} y={weightData[hasRearPax ? 2 : 1].weight} r={5} fill="#F59E0B" stroke="#B45309" strokeWidth={2} />
-        <ReferenceDot x={moments[hasRearPax ? 3 : 2]} y={weightData[hasRearPax ? 3 : 2].weight} r={5} fill="#EF4444" stroke="#991B1B" strokeWidth={2} />
-        {maxBaggage2 > 0 && <ReferenceDot x={moments[4]} y={weightData[4].weight} r={5} fill="#F59E0B" stroke="#B45309" strokeWidth={2} />}
-      </ComposedChart>
-    </ResponsiveContainer>
-    <div className="flex flex-wrap gap-4 mt-4 justify-center text-sm text-gray-700">
-      <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10B981' }} /><span>PILOT & PAX</span></div>
-      {hasRearPax && <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6366F1' }} /><span>REAR PAX</span></div>}
-      <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }} /><span>FUEL</span></div>
-      <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#EF4444' }} /><span>BAGGAGE AREA 1</span></div>
-      {maxBaggage2 > 0 && <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }} /><span>BAGGAGE AREA 2</span></div>}
+              segment={[{ x: (fuel.arm * maxFuel) / (aircraftType === 'C-172' ? 1000 : 1), y: maxFuel }, { x: 0, y: 0 }]}
+              stroke="#F59E0B"
+              strokeWidth={3}
+            />
+            <ReferenceLine
+              segment={[{ x: (baggage1.arm * maxBaggage1) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage1 }, { x: 0, y: 0 }]}
+              stroke="#EF4444"
+              strokeWidth={3}
+            />
+            {maxBaggage2 > 0 && (
+              <ReferenceLine
+                segment={[{ x: (baggage2.arm * maxBaggage2) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage2 }, { x: 0, y: 0 }]}
+                stroke="#F59E0B"
+                strokeWidth={3}
+              />
+            )}
+            <ReferenceDot x={moments[0]} y={weightData[0].weight} r={5} fill="#10B981" stroke="#065F46" strokeWidth={2} />
+            {hasRearPax && <ReferenceDot x={moments[1]} y={weightData[1].weight} r={5} fill="#6366F1" stroke="#3730A3" strokeWidth={2} />}
+            <ReferenceDot x={moments[hasRearPax ? 2 : 1]} y={weightData[hasRearPax ? 2 : 1].weight} r={5} fill="#F59E0B" stroke="#B45309" strokeWidth={2} />
+            <ReferenceDot x={moments[hasRearPax ? 3 : 2]} y={weightData[hasRearPax ? 3 : 2].weight} r={5} fill="#EF4444" stroke="#991B1B" strokeWidth={2} />
+            {maxBaggage2 > 0 && <ReferenceDot x={moments[4]} y={weightData[4].weight} r={5} fill="#F59E0B" stroke="#B45309" strokeWidth={2} />}
+          </ComposedChart>
+        </ResponsiveContainer>
+        <div className="flex flex-wrap gap-4 mt-4 justify-center text-sm text-gray-700">
+          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10B981' }} /><span>PILOT & PAX</span></div>
+          {hasRearPax && <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6366F1' }} /><span>REAR PAX</span></div>}
+          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }} /><span>FUEL</span></div>
+          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#EF4444' }} /><span>BAGGAGE AREA 1</span></div>
+          {maxBaggage2 > 0 && <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }} /><span>BAGGAGE AREA 2</span></div>}
+        </div>
+      </div>
     </div>
-  </div>
-</div>
   );
 };
 
@@ -764,6 +813,12 @@ const Homepage = () => {
   const [activeTab, setActiveTab] = useState('Sheet');
   const [activeAircraftTab, setActiveAircraftTab] = useState('C-150');
   const [userEmail, setUserEmail] = useState('');
+  const [pilotInfo, setPilotInfo] = useState({
+    pilotName: '',
+    route: '',
+    date: '',
+    registration: '',
+  });
 
   const aircraftConfigs = {
     'C-150': {
@@ -902,8 +957,11 @@ const Homepage = () => {
   const saveToDatabase = async () => {
     const scaleFactor = activeAircraftTab === 'C-172' ? 1000 : 1;
     const sheetData = {
-      date: new Date().toISOString(),
+      date: pilotInfo.date || new Date().toISOString(),
       aircraftType: activeAircraftTab,
+      pilotName: pilotInfo.pilotName,
+      route: pilotInfo.route,
+      registration: pilotInfo.registration,
       entries: [
         {
           description: 'BASIC EMPTY WEIGHT',
@@ -981,142 +1039,142 @@ const Homepage = () => {
     }
   };
 
+  const captureGraphs = async () => {
+    const graphSections = document.querySelectorAll('#weight-balance-section > div');
+    const graphImages = [];
 
-const captureGraphs = async () => {
-  const graphSections = document.querySelectorAll('#weight-balance-section > div');
-  const graphImages = [];
-
-  // Expected sections: [0] for table, [1] for CoG graph, [2] for Loading graph
-  if (graphSections.length < 3) {
-    console.warn(`Expected at least 3 sections, found ${graphSections.length}`);
-    return graphImages;
-  }
-
-  // CoG Moment Envelope (capture .recharts-wrapper only)
-  const cogGraph = graphSections[1].querySelector('.recharts-wrapper');
-  if (cogGraph) {
-    try {
-      const canvas = await html2canvas(cogGraph, { scale: 2, useCORS: true });
-      const dataUrl = canvas.toDataURL('image/png');
-      graphImages.push(dataUrl);
-      console.log(`Captured CoG graph: ${dataUrl.substring(0, 50)}...`);
-    } catch (err) {
-      console.error('Error capturing CoG graph:', err);
+    if (graphSections.length < 3) {
+      console.warn(`Expected at least 3 sections, found ${graphSections.length}`);
+      return graphImages;
     }
-  } else {
-    console.warn('CoG graph .recharts-wrapper not found');
-  }
 
-  // Loading Graph (capture entire section to include legend)
-  const loadingGraphSection = graphSections[2];
-  if (loadingGraphSection) {
-    try {
-      const canvas = await html2canvas(loadingGraphSection, { scale: 2, useCORS: true });
-      const dataUrl = canvas.toDataURL('image/png');
-      graphImages.push(dataUrl);
-      console.log(`Captured Loading graph with legend: ${dataUrl.substring(0, 50)}...`);
-    } catch (err) {
-      console.error('Error capturing Loading graph:', err);
-    }
-  } else {
-    console.warn('Loading graph section not found');
-  }
-
-  console.log(`Captured ${graphImages.length} graphs`);
-  return graphImages;
-};
-
-const handleGenerateAndSendPDF = async () => {
-  if (!userEmail) {
-    alert('Please enter an email address.');
-    return;
-  }
-  const htmlContent = document.getElementById('weight-balance-section').outerHTML;
-  const graphImages = await captureGraphs(); // Capture graphs
-  try {
-    const response = await axios.post('/api/generate-pdf', {
-      html: htmlContent,
-      email: userEmail,
-      aircraftType: activeAircraftTab,
-      date: new Date().toLocaleString('en-US', { timeZone: 'EAT' }),
-      graphImages, // Include graph images
-    });
-    if (response.data.success) {
-      alert('PDF sent to your email!');
-    } else {
-      alert('Failed to send PDF.');
-    }
-  } catch (error) {
-    console.error('Error sending PDF:', error);
-    alert('An error occurred while sending the PDF.');
-  }
-};
-
-const handleDownloadPDF = async () => {
-  const section = document.getElementById("weight-balance-section");
-  if (!section) return alert("Section not found");
-
-  const email = localStorage.getItem("email");
-  if (!email) {
-    alert("Email not found. Please log in again.");
-    return;
-  }
-
-  const graphImages = await captureGraphs(); // Capture graphs
-  try {
-    const response = await axios.post(
-      "/api/generate-pdf",
-      {
-        html: section.outerHTML,
-        aircraftType: activeAircraftTab,
-        date: new Date().toLocaleString("en-GB", { timeZone: "Africa/Nairobi" }),
-        email,
-        download: true,
-        graphImages, // Include graph images
-      },
-      {
-        responseType: "arraybuffer",
-        headers: {
-          "Content-Type": "application/json",
-        },
+    const cogGraph = graphSections[1].querySelector('.recharts-wrapper');
+    if (cogGraph) {
+      try {
+        const canvas = await html2canvas(cogGraph, { scale: 2, useCORS: true });
+        const dataUrl = canvas.toDataURL('image/png');
+        graphImages.push(dataUrl);
+        console.log(`Captured CoG graph: ${dataUrl.substring(0, 50)}...`);
+      } catch (err) {
+        console.error('Error capturing CoG graph:', err);
       }
-    );
-
-    // Log response details for debugging
-    const contentType = response.headers["content-type"] || "application/pdf";
-    console.log("Response details:", {
-      contentType,
-      dataLength: response.data.byteLength,
-      status: response.status,
-    });
-
-    // Validate response data
-    if (!response.data || response.data.byteLength === 0) {
-      throw new Error("Empty PDF response data");
+    } else {
+      console.warn('CoG graph .recharts-wrapper not found');
     }
 
-    if (contentType !== "application/pdf") {
-      console.warn("Unexpected Content-Type:", contentType);
+    const loadingGraphSection = graphSections[2];
+    if (loadingGraphSection) {
+      try {
+        const canvas = await html2canvas(loadingGraphSection, { scale: 2, useCORS: true });
+        const dataUrl = canvas.toDataURL('image/png');
+        graphImages.push(dataUrl);
+        console.log(`Captured Loading graph with legend: ${dataUrl.substring(0, 50)}...`);
+      } catch (err) {
+        console.error('Error capturing Loading graph:', err);
+      }
+    } else {
+      console.warn('Loading graph section not found');
     }
 
-    const blob = new Blob([response.data], { type: "application/pdf" });
-    console.log("Blob size:", blob.size);
+    console.log(`Captured ${graphImages.length} graphs`);
+    return graphImages;
+  };
 
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    const safeAircraftTab = activeAircraftTab.replace(/[^a-zA-Z0-9]/g, "-");
-    const filename = `weight_and_balance_${safeAircraftTab}_${Date.now()}.pdf`;
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("Download error:", err);
-    alert(`Failed to download PDF: ${err.message || "Unknown error"}`);
-  }
-};
+  const handleGenerateAndSendPDF = async () => {
+    if (!userEmail) {
+      alert('Please enter an email address.');
+      return;
+    }
+    const htmlContent = document.getElementById('weight-balance-section').outerHTML;
+    const graphImages = await captureGraphs();
+    try {
+      const response = await axios.post('/api/generate-pdf', {
+        html: htmlContent,
+        email: userEmail,
+        aircraftType: activeAircraftTab,
+        date: pilotInfo.date || new Date().toLocaleString('en-US', { timeZone: 'EAT' }),
+        pilotName: pilotInfo.pilotName,
+        route: pilotInfo.route,
+        registration: pilotInfo.registration,
+        graphImages,
+      });
+      if (response.data.success) {
+        alert('PDF sent to your email!');
+      } else {
+        alert('Failed to send PDF.');
+      }
+    } catch (error) {
+      console.error('Error sending PDF:', error);
+      alert('An error occurred while sending the PDF.');
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    const section = document.getElementById("weight-balance-section");
+    if (!section) return alert("Section not found");
+
+    const email = localStorage.getItem("email");
+    if (!email) {
+      alert("Email not found. Please log in again.");
+      return;
+    }
+
+    const graphImages = await captureGraphs();
+    try {
+      const response = await axios.post(
+        "/api/generate-pdf",
+        {
+          html: section.outerHTML,
+          aircraftType: activeAircraftTab,
+          date: pilotInfo.date || new Date().toLocaleString("en-GB", { timeZone: "Africa/Nairobi" }),
+          email,
+          download: true,
+          pilotName: pilotInfo.pilotName,
+          route: pilotInfo.route,
+          registration: pilotInfo.registration,
+          graphImages,
+        },
+        {
+          responseType: "arraybuffer",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const contentType = response.headers["content-type"] || "application/pdf";
+      console.log("Response details:", {
+        contentType,
+        dataLength: response.data.byteLength,
+        status: response.status,
+      });
+
+      if (!response.data || response.data.byteLength === 0) {
+        throw new Error("Empty PDF response data");
+      }
+
+      if (contentType !== "application/pdf") {
+        console.warn("Unexpected Content-Type:", contentType);
+      }
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      console.log("Blob size:", blob.size);
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const safeAircraftTab = activeAircraftTab.replace(/[^a-zA-Z0-9]/g, "-");
+      const filename = `weight_and_balance_${safeAircraftTab}_${Date.now()}.pdf`;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download error:", err);
+      alert(`Failed to download PDF: ${err.message || "Unknown error"}`);
+    }
+  };
 
   const TabButton = ({ label, isActive, onClick }) => (
     <button
@@ -1213,6 +1271,7 @@ const handleDownloadPDF = async () => {
                     landingMoment={landingMoment}
                     saveToDatabase={saveToDatabase}
                     aircraftConfig={aircraftConfigs[activeAircraftTab]}
+                    pilotInfo={{ ...pilotInfo, setPilotInfo }}
                   />
                   <div className="mt-6 flex items-center justify-center space-x-2">
                     <input
@@ -1242,6 +1301,10 @@ const handleDownloadPDF = async () => {
                   <h3 className="text-lg font-semibold mb-4 text-gray-700">Results Summary</h3>
                   <div className="max-w-2xl mx-auto space-y-4">
                     <div className="bg-blue-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600">Pilot Name: <span className="font-semibold">{pilotInfo.pilotName || 'N/A'}</span></p>
+                      <p className="text-sm text-gray-600">Route: <span className="font-semibold">{pilotInfo.route || 'N/A'}</span></p>
+                      <p className="text-sm text-gray-600">Date: <span className="font-semibold">{pilotInfo.date || 'N/A'}</span></p>
+                      <p className="text-sm text-gray-600">Aircraft Registration: <span className="font-semibold">{pilotInfo.registration || 'N/A'}</span></p>
                       <p className="text-sm text-gray-600">Gross Weight: <span className="font-semibold">{totalWeight.toFixed(2)} {aircraftConfigs[activeAircraftTab].unitLabels.weight}</span></p>
                       <p className="text-sm text-gray-600">Takeoff C.O.G: <span className="font-semibold">{takeoffCOG}</span></p>
                       <p className="text-sm text-gray-600">Landing Weight: <span className="font-semibold">{landingWeight.toFixed(2)} {aircraftConfigs[activeAircraftTab].unitLabels.weight}</span></p>
