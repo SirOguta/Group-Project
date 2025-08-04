@@ -16,7 +16,6 @@ import {
   Customized,
 } from 'recharts';
 
-// WeightBalanceTable and MinimumLegalFuel components remain unchanged
 const WeightBalanceTable = ({
   basicEmpty,
   setBasicEmpty,
@@ -40,7 +39,7 @@ const WeightBalanceTable = ({
   landingMoment,
   saveToDatabase,
   aircraftConfig,
-  pilotInfo, // New prop for pilot information
+  pilotInfo,
 }) => {
   const {
     aircraftType,
@@ -329,10 +328,10 @@ const WeightBalanceTable = ({
           {maxBaggage2 > 0 && (
             <tr className="border-b hover:bg-gray-100">
               <td className="px-4 py-3 font-semibold">BAGGAGE AREA 2 (MAX {maxBaggage2} {unitLabels.weight})</td>
-              <td><input type="text" name="weight" value={baggage2.weight} onChange={(e) => handleInputChange(e, baggage2, setBaggage2, false, maxBaggage2)} className="border rounded px-2 py-1 w-full" /></td>
-              <td><input type="text" value={baggage2.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-              <td><input type="text" value={baggage2.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-            </tr>
+            <td><input type="text" name="weight" value={baggage2.weight} onChange={(e) => handleInputChange(e, baggage2, setBaggage2, false, maxBaggage2)} className="border rounded px-2 py-1 w-full" /></td>
+            <td><input type="text" value={baggage2.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+            <td><input type="text" value={baggage2.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+          </tr>
           )}
           <tr className="bg-gray-200 font-bold">
             <td className="px-4 py-3">A.U.W. (MAX {envelopeConfig.maxWeight} {unitLabels.weight})</td>
@@ -363,7 +362,7 @@ const WeightBalanceTable = ({
 
       <div className="mt-12">
         <h2 className="text-xl font-semibold mb-4 text-center">C.O.G MOMENT ENVELOPE</h2>
-        <ResponsiveContainer width="95%" height={500} minWidth={800}>
+        <ResponsiveContainer width="95%" height={500} minWidth={800} className="cog-graph">
           <ComposedChart data={envelopePoints} margin={{ top: 20, right: 40, left: 40, bottom: 60 }}>
             <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} interval={4} />
             <CartesianGrid stroke="rgba(0, 0, 0, 0.1)" strokeWidth={0.5} interval={0} vertical={true} horizontal={true} />
@@ -559,7 +558,7 @@ const WeightBalanceTable = ({
 
       <div className="mt-16">
         <h2 className="text-xl font-semibold mb-4 text-center">LOADING GRAPH</h2>
-        <ResponsiveContainer width="95%" height={500}>
+        <ResponsiveContainer width="95%" height={500} className="loading-graph">
           <ComposedChart margin={{ top: 20, right: 40, bottom: 40, left: 60 }}>
             <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} />
             <XAxis
@@ -622,9 +621,9 @@ const WeightBalanceTable = ({
             {maxBaggage2 > 0 && (
               <ReferenceLine
                 segment={[{ x: (baggage2.arm * maxBaggage2) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage2 }, { x: 0, y: 0 }]}
-                stroke="#F59E0B"
-                strokeWidth={3}
-              />
+              stroke="#F59E0B"
+              strokeWidth={3}
+            />
             )}
             <ReferenceDot x={moments[0]} y={weightData[0].weight} r={5} fill="#10B981" stroke="#065F46" strokeWidth={2} />
             {hasRearPax && <ReferenceDot x={moments[1]} y={weightData[1].weight} r={5} fill="#6366F1" stroke="#3730A3" strokeWidth={2} />}
@@ -1039,45 +1038,175 @@ const Homepage = () => {
     }
   };
 
+  
+
   const captureGraphs = async () => {
-    const graphSections = document.querySelectorAll('#weight-balance-section > div');
     const graphImages = [];
 
-    if (graphSections.length < 3) {
-      console.warn(`Expected at least 3 sections, found ${graphSections.length}`);
-      return graphImages;
+    const section = document.getElementById('weight-balance-section');
+    if (!section) {
+      console.warn('weight-balance-section not found');
+      return [null, null, null];
     }
 
-    const cogGraph = graphSections[1].querySelector('.recharts-wrapper');
-    if (cogGraph) {
+    // Helper function to validate base64 PNG string
+    const isValidBase64PNG = (dataUrl) => {
+      return typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
+    };
+
+    // Force Recharts to re-render
+    window.dispatchEvent(new Event('resize'));
+
+    // Wait for charts to render
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Log DOM structure for debugging
+    console.log('DOM structure of weight-balance-section:', section.outerHTML.substring(0, 500) + '...');
+
+    // Capture Pilot Information Section
+    const pilotInfoSection = section.querySelector('div.mb-6');
+    if (pilotInfoSection) {
       try {
-        const canvas = await html2canvas(cogGraph, { scale: 2, useCORS: true });
-        const dataUrl = canvas.toDataURL('image/png');
-        graphImages.push(dataUrl);
-        console.log(`Captured CoG graph: ${dataUrl.substring(0, 50)}...`);
+        const canvas = await html2canvas(pilotInfoSection, {
+          scale: 2,
+          useCORS: true,
+          logging: true,
+          backgroundColor: '#fff',
+        });
+        const pilotInfoImage = canvas.toDataURL('image/png');
+        if (isValidBase64PNG(pilotInfoImage)) {
+          graphImages.push(pilotInfoImage);
+          console.log(`Captured Pilot Info: ${pilotInfoImage.substring(0, 50)}...`);
+        } else {
+          console.warn('Invalid Pilot Info image format');
+          graphImages.push(null);
+        }
+      } catch (err) {
+        console.error('Error capturing Pilot Info:', err);
+        graphImages.push(null);
+      }
+    } else {
+      console.warn('Pilot Info section not found');
+      graphImages.push(null);
+    }
+
+    // Capture C.O.G Moment Envelope
+    const cogGraphSection = section.querySelector('.cog-graph .recharts-wrapper');
+    if (cogGraphSection) {
+      try {
+        const style = window.getComputedStyle(cogGraphSection);
+        console.log('C.O.G graph styles:', {
+          display: style.display,
+          visibility: style.visibility,
+          width: cogGraphSection.offsetWidth,
+          height: cogGraphSection.offsetHeight,
+        });
+        if (style.display === 'none' || style.visibility === 'hidden' || cogGraphSection.offsetWidth === 0) {
+          console.warn('C.O.G graph is hidden, not visible, or has zero width');
+          graphImages.push(null);
+        } else {
+          const canvas = await html2canvas(cogGraphSection, {
+            scale: 2,
+            useCORS: true,
+            logging: true,
+            backgroundColor: '#fff',
+            width: cogGraphSection.offsetWidth,
+            height: cogGraphSection.offsetHeight,
+          });
+          const cogGraphImage = canvas.toDataURL('image/png');
+          if (isValidBase64PNG(cogGraphImage)) {
+            graphImages.push(cogGraphImage);
+            console.log(`Captured CoG graph: ${cogGraphImage.substring(0, 50)}...`);
+          } else {
+            console.warn('Invalid CoG graph image format');
+            graphImages.push(null);
+          }
+        }
       } catch (err) {
         console.error('Error capturing CoG graph:', err);
+        graphImages.push(null);
       }
     } else {
-      console.warn('CoG graph .recharts-wrapper not found');
+      console.warn('C.O.G graph .cog-graph .recharts-wrapper not found');
+      graphImages.push(null);
     }
 
-    const loadingGraphSection = graphSections[2];
+    // Capture Loading Graph (including legend)
+    const loadingGraphSection = section.querySelector('.loading-graph');
     if (loadingGraphSection) {
       try {
-        const canvas = await html2canvas(loadingGraphSection, { scale: 2, useCORS: true });
-        const dataUrl = canvas.toDataURL('image/png');
-        graphImages.push(dataUrl);
-        console.log(`Captured Loading graph with legend: ${dataUrl.substring(0, 50)}...`);
+        const style = window.getComputedStyle(loadingGraphSection);
+        console.log('Loading graph styles:', {
+          display: style.display,
+          visibility: style.visibility,
+          width: loadingGraphSection.offsetWidth,
+          height: loadingGraphSection.offsetHeight,
+        });
+        if (style.display === 'none' || style.visibility === 'hidden' || loadingGraphSection.offsetWidth === 0) {
+          console.warn('Loading graph is hidden, not visible, or has zero width');
+          graphImages.push(null);
+        } else {
+          const canvas = await html2canvas(loadingGraphSection, {
+            scale: 2,
+            useCORS: true,
+            logging: true,
+            backgroundColor: '#fff',
+            width: loadingGraphSection.offsetWidth,
+            height: loadingGraphSection.offsetHeight,
+          });
+          const loadingGraphImage = canvas.toDataURL('image/png');
+          if (isValidBase64PNG(loadingGraphImage)) {
+            graphImages.push(loadingGraphImage);
+            console.log(`Captured Loading graph: ${loadingGraphImage.substring(0, 50)}...`);
+          } else {
+            console.warn('Invalid Loading graph image format');
+            graphImages.push(null);
+          }
+        }
       } catch (err) {
         console.error('Error capturing Loading graph:', err);
+        graphImages.push(null);
       }
     } else {
-      console.warn('Loading graph section not found');
+      console.warn('Loading graph .loading-graph not found');
+      graphImages.push(null);
     }
 
-    console.log(`Captured ${graphImages.length} graphs`);
+    console.log('Captured images:', {
+      'Pilot Info': !!graphImages[0],
+      'CoG': !!graphImages[1],
+      'Loading': !!graphImages[2],
+    });
+
+    // Alert user if C.O.G graph capture failed
+    if (!graphImages[1]) {
+      console.error('C.O.G graph capture failed, notifying user');
+      alert('Failed to capture C.O.G Moment Envelope graph. Please ensure the graph is visible and try again.');
+    }
+
     return graphImages;
+  };
+
+  const getCleanedHTML = () => {
+    const original = document.getElementById("weight-balance-section");
+    if (!original) return "";
+
+    const clone = original.cloneNode(true);
+
+    // Replace all <input> with <span> showing their current value
+    const inputs = clone.querySelectorAll("input");
+    inputs.forEach((input) => {
+      const span = document.createElement("span");
+      span.textContent = input.value || "";
+      span.style.display = "inline-block";
+      span.style.minHeight = "1.5rem";
+      span.style.padding = "0.25rem";
+      span.style.border = "1px solid #ccc";
+      span.style.borderRadius = "4px";
+      input.replaceWith(span);
+    });
+
+    return clone.outerHTML;
   };
 
   const handleGenerateAndSendPDF = async () => {
@@ -1085,19 +1214,36 @@ const Homepage = () => {
       alert('Please enter an email address.');
       return;
     }
-    const htmlContent = document.getElementById('weight-balance-section').outerHTML;
+
+    if (!pilotInfo.pilotName || !pilotInfo.route || !pilotInfo.registration) {
+      alert('Please fill in all pilot information fields (Pilot Name, Route, Registration).');
+      return;
+    }
+
+    const htmlContent = getCleanedHTML();
+    if (!htmlContent) {
+      alert("Section not found or couldn't generate clean HTML.");
+      return;
+    }
+
     const graphImages = await captureGraphs();
+    if (!graphImages[1]) {
+      // Alert already shown in captureGraphs
+      return;
+    }
+
     try {
       const response = await axios.post('/api/generate-pdf', {
         html: htmlContent,
         email: userEmail,
         aircraftType: activeAircraftTab,
-        date: pilotInfo.date || new Date().toLocaleString('en-US', { timeZone: 'EAT' }),
+        date: pilotInfo.date || new Date().toLocaleString('en-US', { timeZone: 'Africa/Nairobi' }),
         pilotName: pilotInfo.pilotName,
         route: pilotInfo.route,
         registration: pilotInfo.registration,
         graphImages,
       });
+
       if (response.data.success) {
         alert('PDF sent to your email!');
       } else {
@@ -1105,28 +1251,49 @@ const Homepage = () => {
       }
     } catch (error) {
       console.error('Error sending PDF:', error);
-      alert('An error occurred while sending the PDF.');
+      let errorMessage = 'An error occurred while sending the PDF.';
+      if (error.response && error.response.data) {
+        const text = new TextDecoder().decode(new Uint8Array(error.response.data));
+        console.log('Backend error response:', text);
+        errorMessage += ` ${text}`;
+      }
+      alert(errorMessage);
     }
   };
 
   const handleDownloadPDF = async () => {
-    const section = document.getElementById("weight-balance-section");
-    if (!section) return alert("Section not found");
-
-    const email = localStorage.getItem("email");
+    const email = userEmail || localStorage.getItem("email");
     if (!email) {
-      alert("Email not found. Please log in again.");
+      alert("Email not found. Please enter an email or log in again.");
+      return;
+    }
+
+    if (!pilotInfo.pilotName || !pilotInfo.route || !pilotInfo.registration) {
+      alert('Please fill in all pilot information fields (Pilot Name, Route, Registration).');
+      return;
+    }
+
+    await new Promise((r) => requestAnimationFrame(r));
+
+    const cleanedHTML = getCleanedHTML();
+    if (!cleanedHTML) {
+      alert("Section not found or couldn't generate clean HTML.");
       return;
     }
 
     const graphImages = await captureGraphs();
+    if (!graphImages[1]) {
+      // Alert already shown in captureGraphs
+      return;
+    }
+
     try {
       const response = await axios.post(
         "/api/generate-pdf",
         {
-          html: section.outerHTML,
+          html: cleanedHTML,
           aircraftType: activeAircraftTab,
-          date: pilotInfo.date || new Date().toLocaleString("en-GB", { timeZone: "Africa/Nairobi" }),
+          date: pilotInfo.date || new Date().toLocaleString("en-US", { timeZone: 'Africa/Nairobi' }),
           email,
           download: true,
           pilotName: pilotInfo.pilotName,
@@ -1143,38 +1310,36 @@ const Homepage = () => {
       );
 
       const contentType = response.headers["content-type"] || "application/pdf";
-      console.log("Response details:", {
-        contentType,
-        dataLength: response.data.byteLength,
-        status: response.status,
-      });
-
       if (!response.data || response.data.byteLength === 0) {
         throw new Error("Empty PDF response data");
       }
 
-      if (contentType !== "application/pdf") {
-        console.warn("Unexpected Content-Type:", contentType);
-      }
-
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      console.log("Blob size:", blob.size);
-
+      const blob = new Blob([response.data], { type: contentType });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = url;
       const safeAircraftTab = activeAircraftTab.replace(/[^a-zA-Z0-9]/g, "-");
       const filename = `weight_and_balance_${safeAircraftTab}_${Date.now()}.pdf`;
+      link.href = url;
       link.setAttribute("download", filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Download error:", err);
-      alert(`Failed to download PDF: ${err.message || "Unknown error"}`);
+    } catch (error) {
+      console.error("Download error:", error);
+      let errorMessage = 'Failed to download PDF';
+      if (error.response && error.response.data) {
+        const text = new TextDecoder().decode(new Uint8Array(error.response.data));
+        console.log('Backend error response:', text);
+        errorMessage += `: ${text}`;
+      } else {
+        errorMessage += `: ${error.message}`;
+      }
+      alert(errorMessage);
     }
   };
+
+
 
   const TabButton = ({ label, isActive, onClick }) => (
     <button
@@ -1198,7 +1363,7 @@ const Homepage = () => {
     </button>
   );
 
-  return (
+return (
     <div className="min-h-screen w-full bg-gray-100">
       <div className="min-h-screen">
         <header className="bg-white shadow-sm px-6 py-4">
