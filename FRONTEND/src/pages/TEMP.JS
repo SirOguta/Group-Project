@@ -233,132 +233,6 @@ const WeightBalanceTable = ({
 
   const moments = weightData.map(item => (item.weight * item.arm) / scaleFactor);
 
-  // Stability Diagram Configuration
-  const stabilityConfig = {
-    'C-150': {
-      aircraftLength: 2.0,
-      datum: 0.0,
-      xMin: -0.5,
-      xMax: 2.5,
-      yMin: -0.5,
-      yMax: 0.5,
-      xTicks: Array.from({ length: 31 }, (_, i) => -0.5 + i * 0.1),
-      xTickFormatter: (value) => (Math.abs(value % 0.5) < 0.01 ? value.toFixed(1) : ''),
-    },
-    'C-172': {
-      aircraftLength: 100,
-      datum: 0,
-      xMin: -20,
-      xMax: 130,
-      yMin: -10,
-      yMax: 10,
-      xTicks: Array.from({ length: 15 }, (_, i) => -20 + i * 10),
-      xTickFormatter: (value) => (value % 20 === 0 ? value.toFixed(0) : ''),
-    },
-  };
-
-  const currentStabilityConfig = stabilityConfig[aircraftType];
-
-  const drawAircraftDiagram = ({ xAxisMap, yAxisMap }) => {
-    if (!xAxisMap || !yAxisMap) return null;
-    const xScale = xAxisMap[Object.keys(xAxisMap)[0]].scale;
-    const yScale = yAxisMap[Object.keys(yAxisMap)[0]].scale;
-
-    const aircraftLength = currentStabilityConfig.aircraftLength;
-    const datum = currentStabilityConfig.datum;
-    const cog = parseFloat(takeoffCOG);
-
-    // Aircraft body (simplified as a rectangle)
-    const aircraftStart = datum;
-    const aircraftEnd = datum + aircraftLength;
-    const aircraftY = 0;
-
-    // Component positions
-    const components = [
-      { name: 'Pilot', arm: parseFloat(pilotPax.arm), weight: parseFloat(pilotPax.weight) || 0, color: '#10B981' },
-      ...(hasRearPax ? [{ name: 'Rear Pax', arm: parseFloat(rearPax.arm), weight: parseFloat(rearPax.weight) || 0, color: '#6366F1' }] : []),
-      { name: 'Fuel', arm: parseFloat(fuel.arm), weight: parseFloat(fuel.weight) || 0, color: '#F59E0B' },
-      { name: 'Baggage 1', arm: parseFloat(baggage1.arm), weight: parseFloat(baggage1.weight) || 0, color: '#EF4444' },
-      ...(maxBaggage2 > 0 ? [{ name: 'Baggage 2', arm: parseFloat(baggage2.arm), weight: parseFloat(baggage2.weight) || 0, color: '#F59E0B' }] : []),
-    ];
-
-    return (
-      <g>
-        {/* Aircraft body */}
-        <rect
-          x={xScale(aircraftStart)}
-          y={yScale(aircraftY) - 10}
-          width={xScale(aircraftEnd) - xScale(aircraftStart)}
-          height={20}
-          fill="#E5E7EB"
-          stroke="#374151"
-          strokeWidth={2}
-        />
-        {/* Datum line */}
-        <line
-          x1={xScale(datum)}
-          y1={yScale(currentStabilityConfig.yMin)}
-          x2={xScale(datum)}
-          y2={yScale(currentStabilityConfig.yMax)}
-          stroke="blue"
-          strokeWidth={2}
-          strokeDasharray="5 5"
-        />
-        <text
-          x={xScale(datum)}
-          y={yScale(currentStabilityConfig.yMax) + 20}
-          textAnchor="middle"
-          fill="blue"
-          style={{ fontSize: '0.8rem', fontWeight: 'bold' }}
-        >
-          Datum
-        </text>
-        {/* C.O.G marker */}
-        <circle
-          cx={xScale(cog)}
-          cy={yScale(aircraftY)}
-          r={5}
-          fill={isTakeoffOutOfEnvelope ? 'red' : 'brown'}
-          stroke="#000"
-          strokeWidth={1}
-        />
-        <text
-          x={xScale(cog)}
-          y={yScale(aircraftY) - 15}
-          textAnchor="middle"
-          fill={isTakeoffOutOfEnvelope ? 'red' : 'brown'}
-          style={{ fontSize: '0.8rem', fontWeight: 'bold' }}
-        >
-          C.O.G ({cog})
-        </text>
-        {/* Component markers */}
-        {components.map((comp, index) => (
-          comp.weight > 0 && (
-            <g key={index}>
-              <circle
-                cx={xScale(comp.arm)}
-                cy={yScale(aircraftY) + 10}
-                r={4}
-                fill={comp.color}
-                stroke="#000"
-                strokeWidth={1}
-              />
-              <text
-                x={xScale(comp.arm)}
-                y={yScale(aircraftY) + 25}
-                textAnchor="middle"
-                fill={comp.color}
-                style={{ fontSize: '0.7rem' }}
-              >
-                {comp.name} ({comp.arm})
-              </text>
-            </g>
-          )
-        ))}
-      </g>
-    );
-  };
-
   return (
     <div id="weight-balance-section" className="bg-gray-50 min-h-screen font-sans">
       {/* Pilot Information Section */}
@@ -454,10 +328,10 @@ const WeightBalanceTable = ({
           {maxBaggage2 > 0 && (
             <tr className="border-b hover:bg-gray-100">
               <td className="px-4 py-3 font-semibold">BAGGAGE AREA 2 (MAX {maxBaggage2} {unitLabels.weight})</td>
-              <td><input type="text" name="weight" value={baggage2.weight} onChange={(e) => handleInputChange(e, baggage2, setBaggage2, false, maxBaggage2)} className="border rounded px-2 py-1 w-full" /></td>
-              <td><input type="text" value={baggage2.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-              <td><input type="text" value={baggage2.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
-            </tr>
+            <td><input type="text" name="weight" value={baggage2.weight} onChange={(e) => handleInputChange(e, baggage2, setBaggage2, false, maxBaggage2)} className="border rounded px-2 py-1 w-full" /></td>
+            <td><input type="text" value={baggage2.arm} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+            <td><input type="text" value={baggage2.moment.toFixed(2)} readOnly className="border rounded px-2 py-1 w-full bg-gray-100 cursor-not-allowed" /></td>
+          </tr>
           )}
           <tr className="bg-gray-200 font-bold">
             <td className="px-4 py-3">A.U.W. (MAX {envelopeConfig.maxWeight} {unitLabels.weight})</td>
@@ -747,9 +621,9 @@ const WeightBalanceTable = ({
             {maxBaggage2 > 0 && (
               <ReferenceLine
                 segment={[{ x: (baggage2.arm * maxBaggage2) / (aircraftType === 'C-172' ? 1000 : 1), y: maxBaggage2 }, { x: 0, y: 0 }]}
-                stroke="#F59E0B"
-                strokeWidth={3}
-              />
+              stroke="#F59E0B"
+              strokeWidth={3}
+            />
             )}
             <ReferenceDot x={moments[0]} y={weightData[0].weight} r={5} fill="#10B981" stroke="#065F46" strokeWidth={2} />
             {hasRearPax && <ReferenceDot x={moments[1]} y={weightData[1].weight} r={5} fill="#6366F1" stroke="#3730A3" strokeWidth={2} />}
@@ -765,46 +639,6 @@ const WeightBalanceTable = ({
           <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#EF4444' }} /><span>BAGGAGE AREA 1</span></div>
           {maxBaggage2 > 0 && <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }} /><span>BAGGAGE AREA 2</span></div>}
         </div>
-      </div>
-
-      <div className="mt-16">
-        <h2 className="text-xl font-semibold mb-4 text-center">STABILITY DIAGRAM</h2>
-        <ResponsiveContainer width="95%" height={200} className="stability-diagram">
-          <ComposedChart margin={{ top: 20, right: 40, bottom: 40, left: 60 }}>
-            <CartesianGrid stroke="rgba(0, 0, 0, 0.4)" strokeWidth={1} />
-            <XAxis
-              type="number"
-              dataKey="x"
-              label={{
-                value: `DISTANCE FROM DATUM (${unitLabels.arm})`,
-                position: 'insideBottom',
-                offset: -10,
-                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
-              }}
-              domain={[currentStabilityConfig.xMin, currentStabilityConfig.xMax]}
-              ticks={currentStabilityConfig.xTicks}
-              tickFormatter={currentStabilityConfig.xTickFormatter}
-              tick={{ fill: '#555', fontSize: '0.8rem', fontWeight: 'bold' }}
-              interval={0}
-              allowDataOverflow={true}
-            />
-            <YAxis
-              type="number"
-              dataKey="y"
-              label={{
-                value: 'AIRCRAFT',
-                angle: -90,
-                position: 'insideLeft',
-                offset: 0,
-                style: { fill: '#333', fontSize: '0.9rem', fontWeight: '600' },
-              }}
-              domain={[currentStabilityConfig.yMin, currentStabilityConfig.yMax]}
-              hide={true}
-              allowDataOverflow={true}
-            />
-            <Customized component={drawAircraftDiagram} />
-          </ComposedChart>
-        </ResponsiveContainer>
       </div>
     </div>
   );
@@ -1204,13 +1038,15 @@ const Homepage = () => {
     }
   };
 
+  
+
   const captureGraphs = async () => {
     const graphImages = [];
 
     const section = document.getElementById('weight-balance-section');
     if (!section) {
       console.warn('weight-balance-section not found');
-      return [null, null, null, null];
+      return [null, null, null];
     }
 
     // Helper function to validate base64 PNG string
@@ -1336,58 +1172,16 @@ const Homepage = () => {
       graphImages.push(null);
     }
 
-    // Capture Stability Diagram
-    const stabilitySection = section.querySelector('.stability-diagram .recharts-wrapper');
-    if (stabilitySection) {
-      try {
-        const style = window.getComputedStyle(stabilitySection);
-        console.log('Stability diagram styles:', {
-          display: style.display,
-          visibility: style.visibility,
-          width: stabilitySection.offsetWidth,
-          height: stabilitySection.offsetHeight,
-        });
-        if (style.display === 'none' || style.visibility === 'hidden' || stabilitySection.offsetWidth === 0) {
-          console.warn('Stability diagram is hidden, not visible, or has zero width');
-          graphImages.push(null);
-        } else {
-          const canvas = await html2canvas(stabilitySection, {
-            scale: 2,
-            useCORS: true,
-            logging: true,
-            backgroundColor: '#fff',
-            width: stabilitySection.offsetWidth,
-            height: stabilitySection.offsetHeight,
-          });
-          const stabilityImage = canvas.toDataURL('image/png');
-          if (isValidBase64PNG(stabilityImage)) {
-            graphImages.push(stabilityImage);
-            console.log(`Captured Stability diagram: ${stabilityImage.substring(0, 50)}...`);
-          } else {
-            console.warn('Invalid Stability diagram image format');
-            graphImages.push(null);
-          }
-        }
-      } catch (err) {
-        console.error('Error capturing Stability diagram:', err);
-        graphImages.push(null);
-      }
-    } else {
-      console.warn('Stability diagram .stability-diagram .recharts-wrapper not found');
-      graphImages.push(null);
-    }
-
     console.log('Captured images:', {
       'Pilot Info': !!graphImages[0],
       'CoG': !!graphImages[1],
       'Loading': !!graphImages[2],
-      'Stability': !!graphImages[3],
     });
 
-    // Alert user if critical graph capture failed
-    if (!graphImages[1] || !graphImages[3]) {
-      console.error('Critical graph capture failed, notifying user');
-      alert('Failed to capture C.O.G Moment Envelope or Stability Diagram. Please ensure the graphs are visible and try again.');
+    // Alert user if C.O.G graph capture failed
+    if (!graphImages[1]) {
+      console.error('C.O.G graph capture failed, notifying user');
+      alert('Failed to capture C.O.G Moment Envelope graph. Please ensure the graph is visible and try again.');
     }
 
     return graphImages;
@@ -1404,7 +1198,11 @@ const Homepage = () => {
     inputs.forEach((input) => {
       const span = document.createElement("span");
       span.textContent = input.value || "";
-      span.className = "inline-block min-h-[1.5rem] px-1 border border-gray-300 rounded";
+      span.style.display = "inline-block";
+      span.style.minHeight = "1.5rem";
+      span.style.padding = "0.25rem";
+      span.style.border = "1px solid #ccc";
+      span.style.borderRadius = "4px";
       input.replaceWith(span);
     });
 
@@ -1429,7 +1227,7 @@ const Homepage = () => {
     }
 
     const graphImages = await captureGraphs();
-    if (!graphImages[1] || !graphImages[3]) {
+    if (!graphImages[1]) {
       // Alert already shown in captureGraphs
       return;
     }
@@ -1484,250 +1282,250 @@ const Homepage = () => {
     }
 
     const graphImages = await captureGraphs();
-    if (!graphImages[1] || !graphImages[3]) {
+    if (!graphImages[1]) {
       // Alert already shown in captureGraphs
       return;
     }
 
     try {
-          const response = await axios.post(
-            "/api/generate-pdf",
-            {
-              html: cleanedHTML,
-              aircraftType: activeAircraftTab,
-              date: pilotInfo.date || new Date().toLocaleString("en-US", { timeZone: 'Africa/Nairobi' }),
-              email,
-              download: true,
-              pilotName: pilotInfo.pilotName,
-              route: pilotInfo.route,
-              registration: pilotInfo.registration,
-              graphImages,
-            },
-            {
-              responseType: "arraybuffer",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-    
-          const contentType = response.headers["content-type"] || "application/pdf";
-          if (!response.data || response.data.byteLength === 0) {
-            throw new Error("Empty PDF response data");
-          }
-    
-          const blob = new Blob([response.data], { type: contentType });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          const safeAircraftTab = activeAircraftTab.replace(/[^a-zA-Z0-9]/g, "-");
-          const filename = `weight_and_balance_${safeAircraftTab}_${Date.now()}.pdf`;
-          link.href = url;
-          link.setAttribute("download", filename);
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          URL.revokeObjectURL(url);
-        } catch (error) {
-          console.error("Download error:", error);
-          let errorMessage = 'Failed to download PDF';
-          if (error.response && error.response.data) {
-            const text = new TextDecoder().decode(new Uint8Array(error.response.data));
-            console.log('Backend error response:', text);
-            errorMessage += `: ${text}`;
-          } else {
-            errorMessage += `: ${error.message}`;
-          }
-          alert(errorMessage);
+      const response = await axios.post(
+        "/api/generate-pdf",
+        {
+          html: cleanedHTML,
+          aircraftType: activeAircraftTab,
+          date: pilotInfo.date || new Date().toLocaleString("en-US", { timeZone: 'Africa/Nairobi' }),
+          email,
+          download: true,
+          pilotName: pilotInfo.pilotName,
+          route: pilotInfo.route,
+          registration: pilotInfo.registration,
+          graphImages,
+        },
+        {
+          responseType: "arraybuffer",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      };
-    
-    
-    
-      const TabButton = ({ label, isActive, onClick }) => (
-        <button
-          onClick={() => onClick(label)}
-          className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${
-            isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-800'
-          }`}
-        >
-          {label}
-        </button>
       );
-    
-      const AircraftTabButton = ({ label, isActive, onClick }) => (
-        <button
-          onClick={() => onClick(label)}
-          className={`px-4 py-2 font-medium transition-colors ${
-            isActive ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {label}
-        </button>
-      );
-    
-    return (
-        <div className="min-h-screen w-full bg-gray-100">
-          <div className="min-h-screen">
-            <header className="bg-white shadow-sm px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-8">
-                  <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
-                    <div className="grid grid-cols-2 gap-0.5">
-                      <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
-                      <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
-                      <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
-                      <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
-                    </div>
-                  </div>
-                  <nav className="flex space-x-6">
-                    <div className="space-x-6">
-                      <a href="#" className="text-gray-900 font-medium hover:text-blue-600">Home</a>
-                      <button onClick={handleLogout} className="text-gray-600 hover:text-blue-600">Logout</button>
-                    </div>
-                  </nav>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center">
-                    <div className="text-white font-semibold">M</div>
-                  </div>
-                </div>
-              </div>
-            </header>
-    
-            <main className="max-w-6xl mx-auto px-6 py-12">
-              <div className="text-center mb-12">
-                <h1 className="text-5xl font-bold text-gray-900 mb-4">Cessna Weight and Balance</h1>
-                <p className="text-xl font-semibold text-gray-600">
-                  Select your Cessna and enter load sheet data to calculate aircraft weight and balance.
-                </p>
-              </div>
-              <div className="bg-white rounded-lg shadow-md">
-                <div className="flex space-x-1 p-1 bg-gray-50 rounded-t-lg">
-                  <TabButton label="Sheet" isActive={activeTab === 'Sheet'} onClick={setActiveTab} />
-                  <TabButton label="Results" isActive={activeTab === 'Results'} onClick={setActiveTab} />
-                  <TabButton label="Fuel" isActive={activeTab === 'Fuel'} onClick={setActiveTab} />
-                </div>
-                <div className="p-8">
-                  {activeTab === 'Sheet' && (
-                    <div className="text-center">
-                      <h3 className="text-2xl font-bold text-center mb-8 text-gray-700">Weight and Balance Sheet</h3>
-                      <div className="flex space-x-1 mb-6">
-                        <AircraftTabButton label="C-150" isActive={activeAircraftTab === 'C-150'} onClick={setActiveAircraftTab} />
-                        <AircraftTabButton label="C-172" isActive={activeAircraftTab === 'C-172'} onClick={setActiveAircraftTab} />
-                      </div>
-                      <WeightBalanceTable
-                        basicEmpty={basicEmpty}
-                        setBasicEmpty={(value) => setStateForAircraft(activeAircraftTab, 'basicEmpty', value)}
-                        pilotPax={pilotPax}
-                        setPilotPax={(value) => setStateForAircraft(activeAircraftTab, 'pilotPax', value)}
-                        rearPax={rearPax}
-                        setRearPax={(value) => setStateForAircraft(activeAircraftTab, 'rearPax', value)}
-                        fuel={fuel}
-                        setFuel={(value) => setStateForAircraft(activeAircraftTab, 'fuel', value)}
-                        baggage1={baggage1}
-                        setBaggage1={(value) => setStateForAircraft(activeAircraftTab, 'baggage1', value)}
-                        baggage2={baggage2}
-                        setBaggage2={(value) => setStateForAircraft(activeAircraftTab, 'baggage2', value)}
-                        fuelBurn={fuelBurn}
-                        setFuelBurn={(value) => setStateForAircraft(activeAircraftTab, 'fuelBurn', value)}
-                        totalWeight={totalWeight}
-                        takeoffCOG={takeoffCOG}
-                        landingWeight={landingWeight}
-                        landingCOG={landingCOG}
-                        totalMoment={totalMoment}
-                        landingMoment={landingMoment}
-                        saveToDatabase={saveToDatabase}
-                        aircraftConfig={aircraftConfigs[activeAircraftTab]}
-                        pilotInfo={{ ...pilotInfo, setPilotInfo }}
-                      />
-                      <div className="mt-6 flex items-center justify-center space-x-2">
-                        <input
-                          type="email"
-                          value={userEmail}
-                          onChange={(e) => setUserEmail(e.target.value)}
-                          placeholder="Enter your email"
-                          className="border rounded px-2 py-1 w-full max-w-xs"
-                        />
-                        <button
-                          onClick={(e) => { e.preventDefault(); handleGenerateAndSendPDF(); }}
-                          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                        >
-                          Generate and Send PDF
-                        </button>
-                        <button
-                          onClick={handleDownloadPDF}
-                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        >
-                          Download PDF
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {activeTab === 'Results' && (
-                    <div className="text-center py-20">
-                      <h3 className="text-lg font-semibold mb-4 text-gray-700">Results Summary</h3>
-                      <div className="max-w-2xl mx-auto space-y-4">
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600">Pilot Name: <span className="font-semibold">{pilotInfo.pilotName || 'N/A'}</span></p>
-                          <p className="text-sm text-gray-600">Route: <span className="font-semibold">{pilotInfo.route || 'N/A'}</span></p>
-                          <p className="text-sm text-gray-600">Date: <span className="font-semibold">{pilotInfo.date || 'N/A'}</span></p>
-                          <p className="text-sm text-gray-600">Aircraft Registration: <span className="font-semibold">{pilotInfo.registration || 'N/A'}</span></p>
-                          <p className="text-sm text-gray-600">Gross Weight: <span className="font-semibold">{totalWeight.toFixed(2)} {aircraftConfigs[activeAircraftTab].unitLabels.weight}</span></p>
-                          <p className="text-sm text-gray-600">Takeoff C.O.G: <span className="font-semibold">{takeoffCOG}</span></p>
-                          <p className="text-sm text-gray-600">Landing Weight: <span className="font-semibold">{landingWeight.toFixed(2)} {aircraftConfigs[activeAircraftTab].unitLabels.weight}</span></p>
-                          <p className="text-sm text-gray-600">Landing C.O.G: <span className="font-semibold">{landingCOG}</span></p>
-                        </div>
-                        {totalWeight === 0 ? (
-                          <p className="text-gray-500">Complete the weight and balance form to see results here.</p>
-                        ) : (
-                          <p className="text-green-600 font-medium">Weight and balance calculations complete!</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {activeTab === 'Fuel' && (
-                    <MinimumLegalFuel 
-                      unitLabel={aircraftConfigs[activeAircraftTab].unitLabels.weight} 
-                      aircraftType={activeAircraftTab} 
-                    />
-                  )}
+
+      const contentType = response.headers["content-type"] || "application/pdf";
+      if (!response.data || response.data.byteLength === 0) {
+        throw new Error("Empty PDF response data");
+      }
+
+      const blob = new Blob([response.data], { type: contentType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const safeAircraftTab = activeAircraftTab.replace(/[^a-zA-Z0-9]/g, "-");
+      const filename = `weight_and_balance_${safeAircraftTab}_${Date.now()}.pdf`;
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download error:", error);
+      let errorMessage = 'Failed to download PDF';
+      if (error.response && error.response.data) {
+        const text = new TextDecoder().decode(new Uint8Array(error.response.data));
+        console.log('Backend error response:', text);
+        errorMessage += `: ${text}`;
+      } else {
+        errorMessage += `: ${error.message}`;
+      }
+      alert(errorMessage);
+    }
+  };
+
+
+
+  const TabButton = ({ label, isActive, onClick }) => (
+    <button
+      onClick={() => onClick(label)}
+      className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${
+        isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-800'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
+  const AircraftTabButton = ({ label, isActive, onClick }) => (
+    <button
+      onClick={() => onClick(label)}
+      className={`px-4 py-2 font-medium transition-colors ${
+        isActive ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
+return (
+    <div className="min-h-screen w-full bg-gray-100">
+      <div className="min-h-screen">
+        <header className="bg-white shadow-sm px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-8">
+              <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
+                <div className="grid grid-cols-2 gap-0.5">
+                  <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
                 </div>
               </div>
-            </main>
-            <footer className="bg-white border-t mt-16">
-              <div className="max-w-6xl mx-auto px-6 py-8">
-                <div className="flex justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-gray-800 rounded flex items-center">
-                      <div className="flex grid grid-cols-2 gap-0.5">
-                        <div className="w-1 h-1 bg-white rounded-sm"></div>
-                        <div className="w-1 h-1 bg-white rounded-sm"></div>
-                        <div className="w-1 h-1 bg-white rounded-sm"></div>
-                        <div className="w-1 h-1 bg-white rounded-sm"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex space-x-16">
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Quick links</h4>
-                      <ul className="space-y-2">
-                        <li><a href="#" className="text-gray-600 hover:text-blue-600">Blog</a></li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Resources</h4>
-                      <ul className="space-y-2">
-                        <li><a href="#" className="text-gray-600 hover:text-blue-600">Documentation</a></li>
-                      </ul>
-                    </div>
-                  </div>
+              <nav className="flex space-x-6">
+                <div className="space-x-6">
+                  <a href="#" className="text-gray-900 font-medium hover:text-blue-600">Home</a>
+                  <button onClick={handleLogout} className="text-gray-600 hover:text-blue-600">Logout</button>
                 </div>
+              </nav>
+            </div>
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center">
+                <div className="text-white font-semibold">M</div>
               </div>
-            </footer>
+            </div>
           </div>
-        </div>
-      );
-    };
-    
-    
-    export default Homepage;
+        </header>
+
+        <main className="max-w-6xl mx-auto px-6 py-12">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold text-gray-900 mb-4">Cessna Weight and Balance</h1>
+            <p className="text-xl font-semibold text-gray-600">
+              Select your Cessna and enter load sheet data to calculate aircraft weight and balance.
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow-md">
+            <div className="flex space-x-1 p-1 bg-gray-50 rounded-t-lg">
+              <TabButton label="Sheet" isActive={activeTab === 'Sheet'} onClick={setActiveTab} />
+              <TabButton label="Results" isActive={activeTab === 'Results'} onClick={setActiveTab} />
+              <TabButton label="Fuel" isActive={activeTab === 'Fuel'} onClick={setActiveTab} />
+            </div>
+            <div className="p-8">
+              {activeTab === 'Sheet' && (
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-center mb-8 text-gray-700">Weight and Balance Sheet</h3>
+                  <div className="flex space-x-1 mb-6">
+                    <AircraftTabButton label="C-150" isActive={activeAircraftTab === 'C-150'} onClick={setActiveAircraftTab} />
+                    <AircraftTabButton label="C-172" isActive={activeAircraftTab === 'C-172'} onClick={setActiveAircraftTab} />
+                  </div>
+                  <WeightBalanceTable
+                    basicEmpty={basicEmpty}
+                    setBasicEmpty={(value) => setStateForAircraft(activeAircraftTab, 'basicEmpty', value)}
+                    pilotPax={pilotPax}
+                    setPilotPax={(value) => setStateForAircraft(activeAircraftTab, 'pilotPax', value)}
+                    rearPax={rearPax}
+                    setRearPax={(value) => setStateForAircraft(activeAircraftTab, 'rearPax', value)}
+                    fuel={fuel}
+                    setFuel={(value) => setStateForAircraft(activeAircraftTab, 'fuel', value)}
+                    baggage1={baggage1}
+                    setBaggage1={(value) => setStateForAircraft(activeAircraftTab, 'baggage1', value)}
+                    baggage2={baggage2}
+                    setBaggage2={(value) => setStateForAircraft(activeAircraftTab, 'baggage2', value)}
+                    fuelBurn={fuelBurn}
+                    setFuelBurn={(value) => setStateForAircraft(activeAircraftTab, 'fuelBurn', value)}
+                    totalWeight={totalWeight}
+                    takeoffCOG={takeoffCOG}
+                    landingWeight={landingWeight}
+                    landingCOG={landingCOG}
+                    totalMoment={totalMoment}
+                    landingMoment={landingMoment}
+                    saveToDatabase={saveToDatabase}
+                    aircraftConfig={aircraftConfigs[activeAircraftTab]}
+                    pilotInfo={{ ...pilotInfo, setPilotInfo }}
+                  />
+                  <div className="mt-6 flex items-center justify-center space-x-2">
+                    <input
+                      type="email"
+                      value={userEmail}
+                      onChange={(e) => setUserEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="border rounded px-2 py-1 w-full max-w-xs"
+                    />
+                    <button
+                      onClick={(e) => { e.preventDefault(); handleGenerateAndSendPDF(); }}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                    >
+                      Generate and Send PDF
+                    </button>
+                    <button
+                      onClick={handleDownloadPDF}
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Download PDF
+                    </button>
+                  </div>
+                </div>
+              )}
+              {activeTab === 'Results' && (
+                <div className="text-center py-20">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-700">Results Summary</h3>
+                  <div className="max-w-2xl mx-auto space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600">Pilot Name: <span className="font-semibold">{pilotInfo.pilotName || 'N/A'}</span></p>
+                      <p className="text-sm text-gray-600">Route: <span className="font-semibold">{pilotInfo.route || 'N/A'}</span></p>
+                      <p className="text-sm text-gray-600">Date: <span className="font-semibold">{pilotInfo.date || 'N/A'}</span></p>
+                      <p className="text-sm text-gray-600">Aircraft Registration: <span className="font-semibold">{pilotInfo.registration || 'N/A'}</span></p>
+                      <p className="text-sm text-gray-600">Gross Weight: <span className="font-semibold">{totalWeight.toFixed(2)} {aircraftConfigs[activeAircraftTab].unitLabels.weight}</span></p>
+                      <p className="text-sm text-gray-600">Takeoff C.O.G: <span className="font-semibold">{takeoffCOG}</span></p>
+                      <p className="text-sm text-gray-600">Landing Weight: <span className="font-semibold">{landingWeight.toFixed(2)} {aircraftConfigs[activeAircraftTab].unitLabels.weight}</span></p>
+                      <p className="text-sm text-gray-600">Landing C.O.G: <span className="font-semibold">{landingCOG}</span></p>
+                    </div>
+                    {totalWeight === 0 ? (
+                      <p className="text-gray-500">Complete the weight and balance form to see results here.</p>
+                    ) : (
+                      <p className="text-green-600 font-medium">Weight and balance calculations complete!</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              {activeTab === 'Fuel' && (
+                <MinimumLegalFuel 
+                  unitLabel={aircraftConfigs[activeAircraftTab].unitLabels.weight} 
+                  aircraftType={activeAircraftTab} 
+                />
+              )}
+            </div>
+          </div>
+        </main>
+        <footer className="bg-white border-t mt-16">
+          <div className="max-w-6xl mx-auto px-6 py-8">
+            <div className="flex justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 bg-gray-800 rounded flex items-center">
+                  <div className="flex grid grid-cols-2 gap-0.5">
+                    <div className="w-1 h-1 bg-white rounded-sm"></div>
+                    <div className="w-1 h-1 bg-white rounded-sm"></div>
+                    <div className="w-1 h-1 bg-white rounded-sm"></div>
+                    <div className="w-1 h-1 bg-white rounded-sm"></div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-16">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Quick links</h4>
+                  <ul className="space-y-2">
+                    <li><a href="#" className="text-gray-600 hover:text-blue-600">Blog</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Resources</h4>
+                  <ul className="space-y-2">
+                    <li><a href="#" className="text-gray-600 hover:text-blue-600">Documentation</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+};
+
+
+export default Homepage;
